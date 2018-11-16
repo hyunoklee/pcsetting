@@ -1,9 +1,9 @@
 # pcsetting
+```bash
+hyunoklee@ubuntu:~$ nvidia-smi  
+hyunoklee@ubuntu:~$ lsb_release -a  
 
-hyunoklee@ubuntu:~$ nvidia-smi
-hyunoklee@ubuntu:~$ lsb_release -a
-
-No LSB modules are available.
+No LSB modules are available.  
 Distributor ID:	Ubuntu
 Description:	Ubuntu 16.04.4 LTS
 Release:	16.04
@@ -35,3 +35,4 @@ Fri Nov 16 15:11:31 2018
 |    0      2941      G   ...-token=24B52EEA099F262454147FD78AFB5692    39MiB |
 +-----------------------------------------------------------------------------+
 
+'''
