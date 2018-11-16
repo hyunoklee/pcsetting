@@ -50,4 +50,8 @@ http://eigen.tuxfamily.org/index.php?title=Main_Page
 \Eigen\src\Core\util\Macros.h
 
 ubuntu 16.04.4->5 server defual version  3.2.92
+
+EIGEN3_INCLUDE_DIR
+
+include_directories
 '''
