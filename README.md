@@ -36,3 +36,16 @@ Fri Nov 16 15:11:31 2018
 +-----------------------------------------------------------------------------+
 https://hiseon.me/2018/02/17/install_nvidia_driver/
 '''
+https://answers.ros.org/question/253181/howto-eigen-installation/
+```bash
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
+
+/usr/local/include/eigen3
+/usr/include/eigen3
+http://eigen.tuxfamily.org/index.php?title=Main_Page
+
+'''
