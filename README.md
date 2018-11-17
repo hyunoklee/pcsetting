@@ -1,3 +1,29 @@
+우분투 서버 16.04.05 버전 설치 
+설치하면 ubuntu desktop 설치 
+커널 업데이트 하지 말것 무선랜 포기 
+로스 설치 먼저   
+터미널 버전 아닌 그래픽 화면에서 아래 nvidai 그래픽 카드, CUDA ,CuNN 설치
+아래 사이트 대로 그래픽 버전에서 명령어로 설치 
+https://hiseon.me/2018/02/17/install_nvidia_driver/
+
+EIGEN3 는 ROS 설치시 /usr/include/eigen  폴더에 자동 설치 된다. 
+
+\Eigen\src\Core\util\Macros.h 를 보면 버전 확인이 됨. 
+기본  3.2.92 가 설치 되어있음. 
+http://eigen.tuxfamily.org/index.php?title=Main_Page  에서 다운받아 설치 할 수 있음. 
+3.3.5 가 현재 최신  
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
+하지만 아래 폴더에 설치됨. 
+/usr/local/include/eigen3
+추가 알아내햐는 부분  
+eigen3 기존것을 지우고 ros에서 지정한  /usr/include/eigen3 폴더에 설치하는 방법과 
+기존것을 delete 가 아닌 방법으로 지우는 법을 알아야함. 
+
+
 # pcsetting
 ```bash
 hyunoklee@ubuntu:~$ nvidia-smi  
