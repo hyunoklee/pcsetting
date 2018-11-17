@@ -1,3 +1,4 @@
+```bash
 우분투 서버 16.04.05 버전 설치 
 설치하면 ubuntu desktop 설치 
 커널 업데이트 하지 말것 무선랜 포기 
@@ -23,6 +24,10 @@ sudo make install
 eigen3 기존것을 지우고 ros에서 지정한  /usr/include/eigen3 폴더에 설치하는 방법과 
 기존것을 delete 가 아닌 방법으로 지우는 법을 알아야함. 
 
+동일 상황에 있었던 두명의 PC설정 조사 
+
+
+```
 
 # pcsetting
 ```bash
