@@ -1,0 +1,156 @@
+Code는 있고 simulation code가 없다. 
+simulation code 는 이 링크 참조 한듯 https://github.com/Near32/GazeboDomainRandom
+
+교육 사이트 주소는  
+https://www.robotigniteacademy.com/en/
+
+U1-4: Generate Training Images in a Simple Random Environment
+
+You will find all the solutions to the exercises and examples in this
+git clone https://bitbucket.org/theconstructcore/random_env_dcnn_course_solutions.git
+https://bitbucket.org/theconstructcore/random_env_dcnn_course_solutions/src/38c6ad940a138103e7d7e5dc4ed6d94b0a32778e/my_randomgazebomanager_pkg/?at=master
+
+Somulation에서 Can 이 움직이고 훌련할 data 훌련할 picture , xml을  몹는 명령어 
+cd /home/user/catkin_ws
+rm -rf build/ devel/
+source /home/user/.catkin_ws_python3/dnn_venv/bin/activate
+source /home/user/.catkin_ws_python3/devel/setup.bash
+catkin_make
+source devel/setup.bash
+rospack profile
+roslaunch my_randomgazebomanager_pkg create_training_material_1object.launch
+
+
+U1-5: Create a Database for a Simple Random Environment
+
+위에서 모은 data를 기반으로 휼련에 쓰일 형태로 만드는 data csv 형태
+data sample git 10000 개 
+git clone https://bitbucket.org/theconstructcore/domain_randomization_1object_y_fetchrange_staticenv.git
+https://bitbucket.org/theconstructcore/domain_randomization_1object_y_fetchrange_staticenv/src/master/
+
+
+cd /home/user/catkin_ws
+rm -rf build/ devel/
+source /home/user/.catkin_ws_python3/dnn_venv/bin/activate
+source /home/user/.catkin_ws_python3/devel/setup.bash
+catkin_make
+source devel/setup.bash
+rospack profile
+roslaunch my_dcnn_training_pkg generate_dataset_96.launch
+roslaunch my_dcnn_training_pkg generate_dataset_96_ex1-2.launch
+roslaunch my_dcnn_training_pkg generate_dataset_96.launch path_to_source_training_package:=/home/user/catkin_ws/src/domain_randomization_1object_y_fetchrange_staticenv
+
+각 파일별 용도
+Package to contain everything: my_randomgazebomanager_pkg
+Main script: create_training_material.py
+Camera Class: rgb_camera_python3_v2
+Class to get the pose of the interest object: get_model_gazebo_pose.py
+Client to Make the Fetch robot Move: move_fetch_client.py
+A Wrapper for RVIZ markers: rviz_markers.py
+And we will also use the class XMLGenerator, created by https://github.com/Near32/GazeboDomainRandom, with modifications in the python script XMLGenerator.py and base_annotation.xml the template.
+
+
+U1-6: Train Model with Simple Random Environment
+
+cd /home/user/catkin_ws
+rm -rf build/ devel/
+source /home/user/.catkin_ws_python3/dnn_venv/bin/activate
+source /home/user/.catkin_ws_python3/devel/setup.bash
+catkin_make
+source devel/setup.bash
+rospack profile
+roslaunch my_dcnn_training_pkg train_model_96.launch
+roslaunch my_dcnn_training_pkg train_model_96_ex1-3.launch 
+-> 10000 장 training 하는데 교육용 서버에서 11시에 시작 
+텐서보드로 트레이닝 data 보려면 아래 
+cd /home/user/catkin_ws
+source /home/user/.catkin_ws_python3/dnn_venv/bin/activate
+source /home/user/.catkin_ws_python3/devel/setup.bash
+source devel/setup.bash
+rospack profile
+tensorboard --logdir /home/user/catkin_ws/src/my_dcnn_training_pkg/logs_gen
+
+U1-7: Validate Model with Simple Random Environment
+팔을 움직여 물체 ( spam ) 을 잡을 것이다. 
+아래 3개 파일을 만들 것이다. 
+start_fetch_randomenv.launch
+fetch_randomenv.py
+rviz_fetch_model_evaluation.launch
+rgb_camera_python3.py
+
+cd /home/user/catkin_ws
+rm -rf build/ devel/
+source /home/user/.catkin_ws_python3/dnn_venv/bin/activate
+source /home/user/.catkin_ws_python3/devel/setup.bash
+catkin_make
+source devel/setup.bash
+rospack profile
+roslaunch my_dcnn_training_pkg start_fetch_randomenv.launch
+10000개의 이미지 그냥 검증 할수 있다. 앞뒤가 맞치 않음. 앞에는 10개 이미지꺼 검증한대놓고
+roslaunch my_dcnn_training_pkg start_fetch_randomenv_ex1-4.launch 똑같음. 
+roslaunch my_dcnn_training_pkg start_fetch_randomenv_ex1-5.launch 없음 
+
+
+### 서론 질물 list 
+http://forum.theconstructsim.com/
+가제보 시뮬레이션은 어디서 받나요 ?
+종료시 자꾸 날라가요 
+
+For this, we will have to create the following:
+
+Package to contain everything: my_randomgazebomanager_pkg
+Main script: create_training_material.py
+Camera Class: rgb_camera_python3_v2
+Class to get the pose of the interest object: get_model_gazebo_pose.py
+Client to Make the Fetch robot Move: move_fetch_client.py
+A Wrapper for RVIZ markers: rviz_markers.py
+And we will also use the class XMLGenerator, created by https://github.com/Near32/GazeboDomainRandom, with modifications in the python script XMLGenerator.py and base_annotation.xml the template.
+
+
+U1-1: Intro
+So, what's this all about, really? What we are trying to do here is the following:
+
+1: Train a neural network so that it can recognize an object and tell us its location in 3D space.
+2: Use the info from the recognition and send it to a robot to do something with it; grasp it, in this case.
+To train a neural network for vision based predictions, you need to follow some steps:
+
+Step 1: You need to have huge quantities of images that show the environment in which the robot will work. In this case, the object on the table surrounded by its environment.
+Step 2: Those images must be tagged with the relevant information that you want the robot to learn. In this case, the position of the object on top of a table.
+Step 3: Convert those images to the format that your Deep Neural Network needs.
+Step 4: Train your Deep Neural Network until the error in predictions is acceptable for the task.
+Among all the issues you will face, the one that gives the most headaches is the fact that depending on the lighting conditions, for example, the environment can change so much that your model won't be able to predict correctly, even if nothing else has changed.
+
+So, many researchers have worked on ways to make this training more robust in response to changes in the enviroment. And here is where the paper that this course is based upon can be found:
+
+Domain Randomization for Transferring Deep Neural Networks from Simulation to the Real World by Josh Tobin1, Rachel Fong2, Alex Ray2, Jonas Schneider2, Wojciech Zaremba2, Pieter Abbeel3. You can find the original paper here.
+
+In a few words, what we can do is feed the Training model with loads of images of a randomly changing environment. That way, the model will abstract the environment, independent of the lighting, textures, position of the objects, camera, lights, etc. And that is what we are going to do here using simulation.
+
+
+
+Simulation allows this to be done really fast and as random as possible. In reality, it wouldn't be feasible to have thousands of variations of each object in the scene, moving lighting rigs, or a random object positioning system. So, we train in simulation and we adjust the model in real life, spending less time in total and getting better results in model prediction.
+
+U1-2: What will be used in this course
+This version is implemented using the following core systems:
+
+Keras: This high-level neural networks API allows you to use transparently TensorFlow, CNTK, or Theano. We will use it to make the robot learn with the Deep Convolutional Neural Network; in this case, using the model MobileNetV2.
+
+ROS: We will use ROS as the communication system and we will organize everything around its structure and library.
+
+Python 2 and Python 3: Due to the nature of Keras, we will have to much Python 2 and Python 3. This is especially sensible concerning ROS, which has lower support for Python 3, out of the box.
+
+Gazebo: We will create Gazebo plugins and use the internal Gazebo system to manipulate the environment settings and appearance.
+
+TensorBoard: It's a module from TensorFlow that will allow us to monitor the training.
+
+U1-3: Original Paper Features Replicated
+As specified in the paper, "...To evaluate the importance of different factors of our training methodology...", we will try to add the following changes to the training:
+
+Number of training images: We will see if training for 30, 60, 90, or more epochs have an effect on the prediction precision.
+Number of unique textures seen in training: In this case, we will see if, after training with random textures, light, colors, and positions, there is an effect on performance.
+Presence of distractors in training: Adding more objects after training, seeing if only one has an effect on precision.
+Randomization of camera position in training
+Use of pre-trained weights in the detection model: If we do the training in several steps, is it better than in one go? If we do three steps, first a simple system, then adding a distractor, and then varying the positions and the textures, is it better than jumping to the full problem directly?
+
+
+
