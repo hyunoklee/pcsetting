@@ -1,8 +1,25 @@
+강좌 사이트 
+https://www.robotigniteacademy.com/en/course/deep-learning-with-domain-randomization/details/
+구동 사이트 
+https://bitbucket.org/theconstructcore/random_env_dcnn_course_solutions.git
+시뮬레이션 사이트 
+https://bitbucket.org/theconstructcore/fetch_tc/src/r0-kinetic/
+Rosject 사이트 
+https://rds.theconstructsim.com/tc_projects/use_project_share_link/f2883cee-5fd8-41d6-bd5f-09b33862860b
+
+
+
 Code는 있고 simulation code가 없다. 
 simulation code 는 이 링크 참조 한듯 https://github.com/Near32/GazeboDomainRandom
 
+
+https://bitbucket.org/theconstructcore/fetch_tc/src/r0-kinetic/
+
+
+
 교육 사이트 주소는  
 https://www.robotigniteacademy.com/en/
+https://www.robotigniteacademy.com/en/course/deep-learning-with-domain-randomization/details/
 
 U1-4: Generate Training Images in a Simple Random Environment
 
@@ -153,4 +170,16 @@ Randomization of camera position in training
 Use of pre-trained weights in the detection model: If we do the training in several steps, is it better than in one go? If we do three steps, first a simple system, then adding a distractor, and then varying the positions and the textures, is it better than jumping to the full problem directly?
 
 
+//////Question ////////
 
+Where can I download the Gazebo simulation code for Deep Learning with Domain Randomization course?
+
+Hello. 
+I am taking Deep Learning with Domain Randomization class at https://www.robotigniteacademy.com site.
+I want to run the code I learned from that cource on my local PC.
+I could download the code from the site below.
+https://bitbucket.org/theconstructcore/random_env_dcnn_course_solutions.git
+
+But I can not find the Gazebo simulation code.
+Where can I download the Gazebo simulation code for Deep Learning with Domain Randomization course?
+Thank you very much for your kind attention.
