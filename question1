@@ -1,0 +1,10 @@
+https://www.robotigniteacademy.com/en/course/using-openai-with-ros_30_0/ 
+. ~/venv/bin/activate
+python ~/baselines/baselines/deepq/experiments/train_cartpole.py
+
+
+내 local PC에서  
+https://dojang.io/mod/page/view.php?id=2470
+pip freeze > requirementslocal2.txt
+
+pip install -r requirements.txt
