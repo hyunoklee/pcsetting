@@ -1,0 +1,21 @@
+http://today7e.blogspot.com/2018/08/unity-ml-agent.html
+https://multicore-it.com/113?category=700117
+
+git clone https://github.com/Unity-Technologies/ml-agents.git
+
+activate ml-agents
+git clone https://github.com/Unity-Technologies/ml-agents.git
+
+python learn.py --run-id=unity --train
+
+https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Getting-Started-with-Balance-Ball.md
+->볼 실행 
+https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Installation.md
+->전체 설치 ( 리눅스, 윈도우, Docker ) 
+https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Using-Docker.md
+-> 도커로 윈도우 설치 
+
+도커시 윈도우 10 pro 업그레이드 실행 
+https://3sstudy.tistory.com/7
+http://blog.naver.com/PostView.nhn?blogId=ahdxh&logNo=220787866525
+VK7JG-NPHTM-C97JM-9MPGT-3V66T
