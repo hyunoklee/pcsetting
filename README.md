@@ -1,10 +1,10 @@
 ```bash
 ////한성컴퓨터 X57K BossMonster Lv.74  에 Ubuntu18.04 설치
 
-1. 바이오스 nVidai Grapic Disable 
+1. 바이오스 nVidia Grapic Disable 
 2. Ubuntu 18.04 Server install
-3. 바이오스 nVidai Grapic Enable 
-4. nVidia Graphic dirver 자동 설치 
+3. 바이오스 nVidia Grapic Enable 
+4. 터미널서 nVidia Graphic dirver 자동 설치 
 https://steemit.com/kr/@deep-root/ubuntu-cuda
 
 sudo apt-get install ubuntu-drivers-common
