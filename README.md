@@ -1,4 +1,38 @@
 ```bash
+////한성컴퓨터 X57K BossMonster Lv.74  에 Ubuntu18.04 설치
+
+1. 바이오스 nVidai Grapic Disable 
+2. Ubuntu 18.04 Server install
+3. 바이오스 nVidai Grapic Enable 
+4. nVidia Graphic dirver 자동 설치 
+https://steemit.com/kr/@deep-root/ubuntu-cuda
+
+sudo apt-get install ubuntu-drivers-common
+sudo add-apt-repository ppa:graphics-drivers/ppa
+sudo apt-get update
+sudo ubuntu-drivers autoinstall
+shutdown -h now  
+nvidia-smi
+-> 1050 잡혔는지 확인 
+
+5. ubuntu desktop version 설치 
+https://www.techrepublic.com/article/how-to-install-the-gnome-desktop-on-ubuntu-server-18-04/
+
+sudo apt-get update
+sudo apt-get upgrade -y
+sudo apt-get install tasksel -y
+sudo tasksel
+
+여기서 ubuntu desktop check 후 설치 . 
+
+
+6. cuda 설치는 아래 링크 보고 
+sudo apt install cuda-10-0
+https://hiseon.me/2018/03/11/cuda-install/
+```
+
+
+```bash
 우분투 서버 16.04.05 버전 설치 
 설치하면 ubuntu desktop 설치 
 커널 업데이트 하지 말것 무선랜 포기 
