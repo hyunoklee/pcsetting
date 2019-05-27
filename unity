@@ -49,3 +49,51 @@ mlagents-learn config/trainer_config.yaml --run-id=<run-identifier> --train
 https://ridohee.tistory.com/20?category=841803
 https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Getting-Started-with-Balance-Ball.md
 
+/////////
+~/ml-agents$ mlagents-learn config/trainer_config.yaml --run-id=test --train
+~/UnityMlBall$ mlagents-learn --train --slow trainer_config.yaml
+///////
+
+/home/hyunoklee/.local/lib/python3.6/site-packages/mlagents/trainers/learn.py:141: YAMLLoadWarning: calling yaml.load() without Loader=... is deprecated, as the default Loader is unsafe. Please read https://msg.pyyaml.org/load for full details.
+  trainer_config = yaml.load(data_file)
+INFO:mlagents.envs:Start training by pressing the Play button in the Unity Editor.
+Process Process-1:
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/multiprocessing/process.py", line 258, in _bootstrap
+    self.run()
+  File "/usr/lib/python3.6/multiprocessing/process.py", line 93, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/hyunoklee/.local/lib/python3.6/site-packages/mlagents/envs/subprocess_environment.py", line 53, in worker
+    env = env_factory(worker_id)
+  File "/home/hyunoklee/.local/lib/python3.6/site-packages/mlagents/trainers/learn.py", line 192, in create_unity_environment
+    base_port=start_port
+  File "/home/hyunoklee/.local/lib/python3.6/site-packages/mlagents/envs/environment.py", line 76, in __init__
+    aca_params = self.send_academy_parameters(rl_init_parameters_in)
+  File "/home/hyunoklee/.local/lib/python3.6/site-packages/mlagents/envs/environment.py", line 538, in send_academy_parameters
+    return self.communicator.initialize(inputs).rl_initialization_output
+  File "/home/hyunoklee/.local/lib/python3.6/site-packages/mlagents/envs/rpc_communicator.py", line 80, in initialize
+    "The Unity environment took too long to respond. Make sure that :\n"
+mlagents.envs.exception.UnityTimeOutException: The Unity environment took too long to respond. Make sure that :
+	 The environment does not need user interaction to launch
+	 The Academy's Broadcast Hub is configured correctly
+	 The Agents are linked to the appropriate Brains
+	 The environment and the Python interface have compatible versions.
+Traceback (most recent call last):
+  File "/home/hyunoklee/.local/bin/mlagents-learn", line 11, in <module>
+    sys.exit(main())
+  File "/home/hyunoklee/.local/lib/python3.6/site-packages/mlagents/trainers/learn.py", line 262, in main
+    run_training(0, run_seed, options, Queue())
+  File "/home/hyunoklee/.local/lib/python3.6/site-packages/mlagents/trainers/learn.py", line 88, in run_training
+    keep_checkpoints, lesson, env.external_brains,
+  File "/home/hyunoklee/.local/lib/python3.6/site-packages/mlagents/envs/subprocess_environment.py", line 173, in external_brains
+    return self.envs[0].recv().payload
+  File "/home/hyunoklee/.local/lib/python3.6/site-packages/mlagents/envs/subprocess_environment.py", line 38, in recv
+    response: EnvironmentResponse = self.conn.recv()
+  File "/usr/lib/python3.6/multiprocessing/connection.py", line 250, in recv
+    buf = self._recv_bytes()
+  File "/usr/lib/python3.6/multiprocessing/connection.py", line 407, in _recv_bytes
+    buf = self._recv(4)
+  File "/usr/lib/python3.6/multiprocessing/connection.py", line 379, in _recv
+    chunk = read(handle, remaining)
+ConnectionResetError: [Errno 104] Connection reset by peer
+
