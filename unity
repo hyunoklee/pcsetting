@@ -1,23 +1,51 @@
-http://today7e.blogspot.com/2018/08/unity-ml-agent.html
-https://multicore-it.com/113?category=700117
+1. unity3d ubuntu 설치
+https://askubuntu.com/questions/1077816/how-to-install-unity3d-on-ubuntu-18-04 
+이후 터미널에 unity3d 라고 치면 실행 됨. 
 
+
+2. unity ml agnet 설치 
+//설치는 아래 두 자료 섞어 참조 
+//https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Installation.md
+//https://www.youtube.com/watch?v=siy8qVFxwPs&list=PLctzObGsrjfwYHL1obWlVdPRbpubkuKWp&index=2
+
+//ml agent code 다운 로드 
 git clone https://github.com/Unity-Technologies/ml-agents.git
 
-activate ml-agents
-git clone https://github.com/Unity-Technologies/ml-agents.git
+//python 3.6.X 설치 _ 3.5나 3.7 안됨 반드시 3.6.X만 설치 
+//https://packaging.python.org/guides/installing-using-linux-tools/#installing-pip-setuptools-wheel-with-linux-package-managers
+sudo apt install python3-venv python3-pip
 
-python learn.py --run-id=unity --train
+//python3 --version  으로 python3 설치 확인 
+hyunoklee@hyunoklee:~/Downloads$ python3 --version
+Python 3.6.7
 
+
+//파이썬3 용 pip upgrade
+pip3 install --upgrade pip
+-> 하기만 이거 하고 다음 step 에서 ImportError: cannot import name 'main' erro 발생하는 것 같음 
+-> 다음 스탭서 erro 발생시 재설치 sudo python3 -m pip uninstall pip && sudo apt install python3-pip --reinstall
+
+//필요 dependency 설치  --> 여기서 tensor flow ? mlagents-learn 도 설치 하나  ?
+cd ~/ml-agents/ml-agents
+pip3 install -e .
+~/ml-agents/ml-agents-envs
+pip3 install -e ./
+
+reboot 후
+mlagents-learn --help 실행하면 관련 명령어 나와야함.  
+
+그런데 안되면 위처럼 코드 래밸서 설치 외헤 bin 설치 하는 방법도 있음 
+//ml agent를 다움받은 code를 통해서가 아닌 bin으로 설치 
+//pip3 install mlagents
+reboot 후 
+mlagents-learn --help 실행하면 관련 명령어 나와야함.  
+
+3. 실행 시킴  
+3D ball 기본예제 아래 명령어 실행시 erro 발생 원인 찾아야함. 
+mlagents-learn config/trainer_config.yaml --run-id=<run-identifier> --train
+
+
+추가 참고 자료 
+https://ridohee.tistory.com/20?category=841803
 https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Getting-Started-with-Balance-Ball.md
-->볼 실행 
-https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Installation.md
-->전체 설치 ( 리눅스, 윈도우, Docker ) 
-https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Using-Docker.md
--> 도커로 윈도우 설치 
-
-도커시 윈도우 10 pro 업그레이드 실행 
-
-
-//unity3d install 
-https://askubuntu.com/questions/1077816/how-to-install-unity3d-on-ubuntu-18-04
 
