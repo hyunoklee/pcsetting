@@ -39,4 +39,12 @@ https://mindrich.tistory.com/30?category=755803
 이거보고 진행 
 (ml-agents) C:\Users\lacas\ml-agents>mlagents-learn config/trainer_config.yaml --run-id=firstRun --train
 
-https://multicore-it.com/98  -> 이거 보고 진행하는게 나음 
+https://multicore-it.com/98  -> 이거 보고 진행하는게 나음
+
+///////////////////////////////////////////////////////
+
+https://mrsyee.github.io/rl/2018/11/16/unity-mlagent-pushblock/
+https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Basic-Guide.md
+https://multicore-it.com/98?category=686813
+아래거 조합 예제 
+
