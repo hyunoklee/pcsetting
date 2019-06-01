@@ -1,0 +1,42 @@
+http://today7e.blogspot.com/2018/08/unity-ml-agent.html
+https://mindrich.tistory.com/30?category=755803
+https://www.youtube.com/watch?v=mJh31T3aGkI&list=PLctzObGsrjfwYHL1obWlVdPRbpubkuKWp&index=3
+
+https://www.youtube.com/watch?v=mJh31T3aGkI&list=PLctzObGsrjfwYHL1obWlVdPRbpubkuKWp&index=3
+동영상강의 보고 따라하는것 추천 
+
+1. unity3d 설치 
+2. http://today7e.blogspot.com/2018/08/unity-ml-agent.html  이거 따라서  2-2 까지 진행 
+
+2-1. Anaconda 버전 5.1 설치  -> 버전 반드시 5.1 설치 
+2-2. 환경변수를 등록
+
+ Conda 환경 설정 및 ml-agents 활성화 부터는 아래 동영상 강의 처럼 
+https://www.youtube.com/watch?v=mJh31T3aGkI&list=PLctzObGsrjfwYHL1obWlVdPRbpubkuKWp&inde
+아나콘다 프롬프트실행 
+2-3. 소스 다운로드 
+(base) C:\Users\lacas>git clone https://github.com/Unity-Technologies/ml-agents.git
+2-4. Conda 환경 설정 및 ml-agents 활성화
+(base) C:\Users\lacas>conda create -n ml-agents python=3.6
+(base) C:\Users\lacas>activate ml-agents
+2-5. 
+(ml-agents) C:\Users\lacas\ml-agents>cd ml-agents
+(ml-agents) C:\Users\lacas\ml-agents\ml-agents>pip install --upgrade pip
+(ml-agents) C:\Users\lacas\ml-agents\ml-agents>pip install -e .
+
+-> 여기서 아래 erro 나면  
+error: mlagents-envs 0.8.1 has requirement pillow<=5.4.1,>=4.2.1, but you'll have pillow 6.0.0 which is incompatible.
+pip uninstall pillow==6.0.0
+pip install pillow==5.4.1
+하고 다시 설치 진행 
+(ml-agents) C:\Users\lacas\ml-agents\ml-agents>pip install -e .
+
+설치 완료후 아래 명령어 처러 유니티 어찌고 그림 나오면 설치 성공 
+(ml-agents) C:\Users\lacas\ml-agents\ml-agents>mlagents-learn --help
+
+///////////////실행 ///////////////////////////////////////////
+https://mindrich.tistory.com/30?category=755803 
+이거보고 진행 
+(ml-agents) C:\Users\lacas\ml-agents>mlagents-learn config/trainer_config.yaml --run-id=firstRun --train
+
+https://multicore-it.com/98  -> 이거 보고 진행하는게 나음 
