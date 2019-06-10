@@ -1,10 +1,4 @@
-https://www.robotigniteacademy.com/en/course/using-openai-with-ros_30_0/ 
-. ~/venv/bin/activate
-python ~/baselines/baselines/deepq/experiments/train_cartpole.py
-
-
-내 local PC에서  
-https://dojang.io/mod/page/view.php?id=2470
-pip freeze > requirementslocal2.txt
-
-pip install -r requirements.txt
+Inertia tensor must be larger then zero in all coordinates.
+UnityEngine.Rigidbody:set_inertiaTensor(Vector3)
+RosSharp.Urdf.UrdfInertial:UpdateRigidBodyData() (at Assets/RosSharp/Scripts/Urdf/UrdfComponents/UrdfInertial.cs:75)
+RosSharp.Urdf.UrdfInertial:Start() (at Assets/RosSharp/Scripts/Urdf/UrdfComponents/UrdfInertial.cs:65)
