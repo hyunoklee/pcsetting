@@ -1,4 +1,8 @@
 ```bash
+////한성컴퓨터 X57K BossMonster Lv.74  에 ubuntu 16.04 load tl 
+UEIF 바이오스 setting disable 해야 켜짐 
+```
+```bash
 ////한성컴퓨터 X57K BossMonster Lv.74  에 Ubuntu18.04 설치
 
 1. 바이오스 nVidia Grapic Disable 
