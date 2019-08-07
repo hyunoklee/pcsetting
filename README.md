@@ -1,4 +1,6 @@
 ```bash
+16.04에서 무선랜 드라이버 잡는 법
+https://askubuntu.com/questions/1052311/network-unclaimed-on-ubuntu
 ////한성컴퓨터 X57K BossMonster Lv.74  에 ubuntu 16.04 load tl 
 UEIF 바이오스 setting disable 해야 켜짐 
 ```
