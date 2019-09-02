@@ -1,0 +1,173 @@
+bottle: 81%
+aeroplane: 37%
+[DEBUG] [1567437616.476566125, 65.626000000]: Label image has not been broadcasted.1
+[DEBUG] [1567437616.476637395, 65.626000000]: Label image has not been broadcasted.2
+[DEBUG] [1567437616.476664529, 65.626000000]: Label image has not been broadcasted.3
+[DEBUG] [1567437616.476989207, 65.627000000]: Label image has not been broadcasted.4
+[DEBUG] [1567437616.477015440, 65.627000000]: Label image has not been broadcasted.5
+[DEBUG] [1567437616.490113259, 65.627000000]: [YoloObjectDetector] USB image received.
+[DEBUG] [1567437616.490330100, 65.627000000]: [YoloObjectDetector] USB image received.1
+[DEBUG] [1567437616.496579603, 65.627000000]: [YoloObjectDetector] USB image received.2
+[DEBUG] [1567437616.499835939, 65.644000000]: [YoloObjectDetector] USB image received.3
+[DEBUG] [1567437616.522448492, 65.659000000]: Detection image has not been broadcasted.
+[DEBUG] [1567437616.522533220, 65.659000000]: ymin 721 , ymax 1027 , xmin 5 , xmax 384   ( 874 ,  194  ) 
+[DEBUG] [1567437616.522557535, 65.659000000]: ymin 223 , ymax 475 , xmin 696 , xmax 807   ( 349 ,  751  ) 
+[DEBUG] [1567437616.560638312, 65.694000000]: [YoloObjectDetector] USB image received.
+[DEBUG] [1567437616.560696390, 65.694000000]: [YoloObjectDetector] USB image received.1
+[DEBUG] [1567437616.568821756, 65.702000000]: [YoloObjectDetector] USB image received.2
+[DEBUG] [1567437616.570599482, 65.704000000]: [YoloObjectDetector] USB image received.3
+bottle: 77%
+aeroplane: 21%
+[DEBUG] [1567437616.580064790, 65.712000000]: Label image has not been broadcasted.1
+[DEBUG] [1567437616.580137315, 65.712000000]: Label image has not been broadcasted.2
+[DEBUG] [1567437616.580163706, 65.712000000]: Label image has not been broadcasted.3
+[DEBUG] [1567437616.580431146, 65.712000000]: Label image has not been broadcasted.4
+[DEBUG] [1567437616.580451835, 65.712000000]: Label image has not been broadcasted.5
+[DEBUG] [1567437616.632884249, 65.755000000]: Detection image has not been broadcasted.
+[DEBUG] [1567437616.632945994, 65.755000000]: ymin 717 , ymax 1028 , xmin 5 , xmax 378   ( 872 ,  191  ) 
+[DEBUG] [1567437616.632967840, 65.755000000]: ymin 219 , ymax 475 , xmin 696 , xmax 807   ( 347 ,  751  ) 
+[DEBUG] [1567437616.641146256, 65.761000000]: [YoloObjectDetector] USB image received.
+[DEBUG] [1567437616.641234455, 65.762000000]: [YoloObjectDetector] USB image received.1
+[DEBUG] [1567437616.645254977, 65.765000000]: [YoloObjectDetector] USB image received.2
+[DEBUG] [1567437616.647014987, 65.767000000]: [YoloObjectDetector] USB image received.3
+bottle: 78%
+aeroplane: 24%
+[DEBUG] [1567437616.686745328, 65.801000000]: Label image has not been broadcasted.1
+[DEBUG] [1567437616.686825709, 65.801000000]: Label image has not been broadcasted.2
+[DEBUG] [1567437616.686851289, 65.801000000]: Label image has not been broadcasted.3
+[DEBUG] [1567437616.687304595, 65.801000000]: Label image has not been broadcasted.4
+[DEBUG] [1567437616.687337781, 65.801000000]: Label image has not been broadcasted.5
+[DEBUG] [1567437616.717032216, 65.818000000]: [YoloObjectDetector] USB image received.
+[DEBUG] [1567437616.717091515, 65.818000000]: [YoloObjectDetector] USB image received.1
+[DEBUG] [1567437616.727197809, 65.821000000]: [YoloObjectDetector] USB image received.2
+[DEBUG] [1567437616.728985436, 65.826000000]: [YoloObjectDetector] USB image received.3
+[DEBUG] [1567437616.735117570, 65.832000000]: Detection image has not been broadcasted.
+[DEBUG] [1567437616.735177568, 65.832000000]: ymin 718 , ymax 1023 , xmin 4 , xmax 377   ( 870 ,  190  ) 
+[DEBUG] [1567437616.735199978, 65.832000000]: ymin 220 , ymax 471 , xmin 696 , xmax 807   ( 345 ,  751  ) 
+bottle: 76%
+aeroplane: 30%
+[DEBUG] [1567437616.788642684, 65.882000000]: [YoloObjectDetector] USB image received.
+[DEBUG] [1567437616.788942358, 65.882000000]: [YoloObjectDetector] USB image received.1
+[DEBUG] [1567437616.789521336, 65.882000000]: Label image has not been broadcasted.1
+[DEBUG] [1567437616.789579343, 65.882000000]: Label image has not been broadcasted.2
+[DEBUG] [1567437616.789612589, 65.882000000]: Label image has not been broadcasted.3
+[DEBUG] [1567437616.790299934, 65.882000000]: Label image has not been broadcasted.4
+[DEBUG] [1567437616.790334482, 65.882000000]: Label image has not been broadcasted.5
+[DEBUG] [1567437616.798779532, 65.889000000]: [YoloObjectDetector] USB image received.2
+[DEBUG] [1567437616.803872688, 65.892000000]: [YoloObjectDetector] USB image received.3
+[darknet_ros-2] process has died [pid 15128, exit code -11, cmd /home/hyunoklee/catkin_ws/devel/lib/darknet_ros/darknet_ros __name:=darknet_ros __log:=/home/hyunoklee/.ros/log/f9feab68-cd94-11e9-a860-40a3cc7024b1/darknet_ros-2.log].
+log file: /home/hyunoklee/.ros/log/f9feab68-cd94-11e9-a860-40a3cc7024b1/darknet_ros-2*.log
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+bottle: 70%
+stop sign: 24%
+[DEBUG] [1567466916.924324898, 95.962000000]: Label image has not been broadcasted.1
+[DEBUG] [1567466916.924362099, 95.962000000]: Label image has not been broadcasted.2
+[DEBUG] [1567466916.924386061, 95.962000000]: Label image has not been broadcasted.3
+[DEBUG] [1567466916.924812148, 95.964000000]: Label image has not been broadcasted.4
+[DEBUG] [1567466916.924882657, 95.964000000]: Label image has not been broadcasted.5
+[DEBUG] [1567466916.965285476, 95.990000000]: [YoloObjectDetector] USB image received.
+[DEBUG] [1567466916.965656807, 95.990000000]: [YoloObjectDetector] USB image received.1
+[DEBUG] [1567466916.971168895, 95.996000000]: [YoloObjectDetector] USB image received.2
+[DEBUG] [1567466916.974859980, 95.998000000]: [YoloObjectDetector] USB image received.3
+[DEBUG] [1567466916.985110162, 96.010000000]: Detection image has not been broadcasted.
+[DEBUG] [1567466916.985151112, 96.010000000]: ymin 437 , ymax 595 , xmin 1318 , xmax 1542   ( 516 ,  1430  ) 
+[DEBUG] [1567466916.985174326, 96.010000000]: ymin 427 , ymax 668 , xmin 751 , xmax 874   ( 547 ,  812  ) 
+bottle: 73%
+[DEBUG] [1567466917.029234850, 96.048000000]: Label image has not been broadcasted.1
+[DEBUG] [1567466917.029314544, 96.048000000]: Label image has not been broadcasted.2
+[DEBUG] [1567466917.029341015, 96.048000000]: Label image has not been broadcasted.3
+[DEBUG] [1567466917.029664821, 96.048000000]: Label image has not been broadcasted.4
+[DEBUG] [1567466917.029687253, 96.048000000]: Label image has not been broadcasted.5
+[DEBUG] [1567466917.042232884, 96.056000000]: [YoloObjectDetector] USB image received.
+[DEBUG] [1567466917.044963222, 96.057000000]: [YoloObjectDetector] USB image received.1
+[DEBUG] [1567466917.057505625, 96.070000000]: [YoloObjectDetector] USB image received.2
+[DEBUG] [1567466917.061739454, 96.074000000]: [YoloObjectDetector] USB image received.3
+[DEBUG] [1567466917.086961853, 96.098000000]: Detection image has not been broadcasted.
+[DEBUG] [1567466917.087012679, 96.098000000]: ymin 424 , ymax 668 , xmin 751 , xmax 876   ( 546 ,  813  ) 
+[DEBUG] [1567466917.116428903, 96.126000000]: [YoloObjectDetector] USB image received.
+[DEBUG] [1567466917.116472252, 96.126000000]: [YoloObjectDetector] USB image received.1
+[DEBUG] [1567466917.120519033, 96.128000000]: [YoloObjectDetector] USB image received.2
+[DEBUG] [1567466917.122808874, 96.131000000]: [YoloObjectDetector] USB image received.3
+bottle: 68%
+stop sign: 40%
+[DEBUG] [1567466917.134207042, 96.138000000]: Label image has not been broadcasted.1
+[DEBUG] [1567466917.134283920, 96.138000000]: Label image has not been broadcasted.2
+[DEBUG] [1567466917.134309287, 96.138000000]: Label image has not been broadcasted.3
+[DEBUG] [1567466917.134546708, 96.138000000]: Label image has not been broadcasted.4
+[DEBUG] [1567466917.134569414, 96.138000000]: Label image has not been broadcasted.5
+[DEBUG] [1567466917.192529502, 96.183000000]: [YoloObjectDetector] USB image received.
+[DEBUG] [1567466917.192566438, 96.184000000]: [YoloObjectDetector] USB image received.1
+[DEBUG] [1567466917.194227506, 96.185000000]: Detection image has not been broadcasted.
+[DEBUG] [1567466917.194287092, 96.185000000]: ymin 436 , ymax 594 , xmin 1315 , xmax 1544   ( 515 ,  1429  ) 
+[DEBUG] [1567466917.194324277, 96.185000000]: ymin 420 , ymax 663 , xmin 753 , xmax 874   ( 541 ,  813  ) 
+[DEBUG] [1567466917.196988525, 96.188000000]: [YoloObjectDetector] USB image received.2
+[DEBUG] [1567466917.198914447, 96.190000000]: [YoloObjectDetector] USB image received.3
+bottle: 69%
+stop sign: 46%
+[DEBUG] [1567466917.234088589, 96.219000000]: Label image has not been broadcasted.1
+[DEBUG] [1567466917.234179226, 96.219000000]: Label image has not been broadcasted.2
+[DEBUG] [1567466917.234222064, 96.219000000]: Label image has not been broadcasted.3
+[DEBUG] [1567466917.234658916, 96.219000000]: Label image has not been broadcasted.4
+[DEBUG] [1567466917.234696370, 96.219000000]: Label image has not been broadcasted.5
+[DEBUG] [1567466917.266605187, 96.229000000]: [YoloObjectDetector] USB image received.
+[DEBUG] [1567466917.266695859, 96.229000000]: [YoloObjectDetector] USB image received.1
+[DEBUG] [1567466917.273067956, 96.232000000]: [YoloObjectDetector] USB image received.2
+[DEBUG] [1567466917.277847550, 96.235000000]: [YoloObjectDetector] USB image received.3
+[DEBUG] [1567466917.279999305, 96.236000000]: Detection image has not been broadcasted.
+[DEBUG] [1567466917.280076452, 96.236000000]: ymin 436 , ymax 595 , xmin 1312 , xmax 1546   ( 515 ,  1429  ) 
+[DEBUG] [1567466917.280103715, 96.236000000]: ymin 417 , ymax 664 , xmin 752 , xmax 876   ( 540 ,  814  ) 
+[DEBUG] [1567466917.331596354, 96.283000000]: [YoloObjectDetector] USB image received.
+[DEBUG] [1567466917.331636339, 96.283000000]: [YoloObjectDetector] USB image received.1
+bottle: 74%
+[DEBUG] [1567466917.338620372, 96.288000000]: Label image has not been broadcasted.1
+[DEBUG] [1567466917.338699830, 96.288000000]: Label image has not been broadcasted.2
+[DEBUG] [1567466917.338723079, 96.288000000]: Label image has not been broadcasted.3
+[DEBUG] [1567466917.339063678, 96.288000000]: Label image has not been broadcasted.4
+[DEBUG] [1567466917.339091175, 96.288000000]: Label image has not been broadcasted.5
+[DEBUG] [1567466917.341513266, 96.288000000]: [YoloObjectDetector] USB image received.2
+[DEBUG] [1567466917.346716453, 96.288000000]: [YoloObjectDetector] USB image received.3
+[DEBUG] [1567466917.379185800, 96.319000000]: Detection image has not been broadcasted.
+[DEBUG] [1567466917.379263213, 96.319000000]: ymin 426 , ymax 668 , xmin 750 , xmax 877   ( 547 ,  813  ) 
+[DEBUG] [1567466917.418720070, 96.357000000]: [YoloObjectDetector] USB image received.
+[DEBUG] [1567466917.418759058, 96.357000000]: [YoloObjectDetector] USB image received.1
+[DEBUG] [1567466917.422496147, 96.360000000]: [YoloObjectDetector] USB image received.2
+[DEBUG] [1567466917.424100871, 96.361000000]: [YoloObjectDetector] USB image received.3
+bottle: 75%
+stop sign: 23%
+[DEBUG] [1567466917.441484127, 96.377000000]: Label image has not been broadcasted.1
+[DEBUG] [1567466917.441558126, 96.377000000]: Label image has not been broadcasted.2
+[DEBUG] [1567466917.441582642, 96.377000000]: Label image has not been broadcasted.3
+[DEBUG] [1567466917.441861214, 96.377000000]: Label image has not been broadcasted.4
+[DEBUG] [1567466917.441891710, 96.377000000]: Label image has not been broadcasted.5
+[DEBUG] [1567466917.496705636, 96.413000000]: Detection image has not been broadcasted.
+[DEBUG] [1567466917.496758908, 96.413000000]: ymin 442 , ymax 594 , xmin 1316 , xmax 1541   ( 518 ,  1428  ) 
+[DEBUG] [1567466917.496781747, 96.413000000]: ymin 425 , ymax 667 , xmin 750 , xmax 877   ( 546 ,  813  ) 
+[DEBUG] [1567466917.501519796, 96.416000000]: [YoloObjectDetector] USB image received.
+[DEBUG] [1567466917.501561449, 96.416000000]: [YoloObjectDetector] USB image received.1
+[DEBUG] [1567466917.506812743, 96.416000000]: [YoloObjectDetector] USB image received.2
+[DEBUG] [1567466917.508579964, 96.416000000]: [YoloObjectDetector] USB image received.3
+bottle: 73%
+stop sign: 36%
+[DEBUG] [1567466917.547178711, 96.452000000]: Label image has not been broadcasted.1
+[DEBUG] [1567466917.547270638, 96.452000000]: Label image has not been broadcasted.2
+[DEBUG] [1567466917.547307046, 96.452000000]: Label image has not been broadcasted.3
+[DEBUG] [1567466917.547751905, 96.452000000]: Label image has not been broadcasted.4
+[DEBUG] [1567466917.547837811, 96.452000000]: Label image has not been broadcasted.5
+[DEBUG] [1567466917.580713996, 96.471000000]: [YoloObjectDetector] USB image received.
+[DEBUG] [1567466917.580939419, 96.471000000]: [YoloObjectDetector] USB image received.1
+[DEBUG] [1567466917.586828409, 96.474000000]: [YoloObjectDetector] USB image received.2
+[DEBUG] [1567466917.589755847, 96.476000000]: [YoloObjectDetector] USB image received.3
+[DEBUG] [1567466917.593828771, 96.478000000]: Detection image has not been broadcasted.
+[DEBUG] [1567466917.593924683, 96.478000000]: ymin 437 , ymax 593 , xmin 1311 , xmax 1546   ( 515 ,  1428  ) 
+[darknet_ros-2] process has died [pid 6182, exit code -11, cmd /home/hyunoklee/catkin_ws/devel/lib/darknet_ros/darknet_ros __name:=darknet_ros __log:=/home/hyunoklee/.ros/log/1d438da2-cdd9-11e9-9a40-40a3cc7024b1/darknet_ros-2.log].
+log file: /home/hyunoklee/.ros/log/1d438da2-cdd9-11e9-9a40-40a3cc7024b1/darknet_ros-2*.log
+
