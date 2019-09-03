@@ -231,10 +231,14 @@ sync_1.registerCallback(boost::bind(&YoloObjectDetector::cameraCallback,this,_1,
   }
   ROS_DEBUG("[YoloObjectDetector] USB image received.3");
 
-      if (cam_depth)
-      {
-         DepthImageCopy_ = cam_depth->image.clone();
-      }
+  if (cam_depth)
+  {
+     boost::unique_lock<boost::shared_mutex> lockDepthImageCallback(mutexDepthImageCallback_);
+     DepthImageCopy_ = cam_depth->image.clone();
+	 DepthframeWidth_ = cam_depth->image.size().width;
+	 DepthframeHeight_ = cam_depth->image.size().height;
+	 ROS_DEBUG(" Depthframe w %d , h %d " , DepthframeWidth_, DepthframeHeight_ );
+   }
   
 
 //ros::Duration(0.1).sleep(); 
@@ -683,13 +687,17 @@ void *YoloObjectDetector::publishInThread()
           boundingBox.ymin = ymin;
           boundingBox.xmax = xmax;
           boundingBox.ymax = ymax;
-                  boundingBox.X = 1;
-                  boundingBox.Y = 1;
-                  //boundingBox.Z = Z;
-		  ROS_DEBUG("ymin %d , ymax %d , xmin %d , xmax %d   ( %d ,  %d  ) " , ymin , ymax , xmin, xmax, (int)round((ymin+ymax)/2 ), (int)round( (xmin+xmax)/2 ));
+          boundingBox.X = 1;
+          boundingBox.Y = 1;
+ 		  /*ROS_DEBUG("ymin %d , ymax %d , xmin %d , xmax %d   ( %d ,  %d  ) " , ymin , ymax , xmin, xmax, (int)round((ymin+ymax)/2 ), (int)round( (xmin+xmax)/2 ));
 		  if(  (((ymin+ymax)/2) < 1080 ) &&  (((xmin+xmax)/2 ) < 1920) && (((ymin+ymax)/2) > 0 ) && (((ymin+ymax)/2) > 0 ) ) {
-		  boundingBox.Z = (float)DepthImageCopy_.at<float>((ymin+ymax)/2,(xmin+xmax)/2);
-		  }
+		  	boundingBox.Z = (float)DepthImageCopy_.at<float>((ymin+ymax)/2,(xmin+xmax)/2);
+		  }*/
+		  
+		  ROS_DEBUG("y %d , x %d , h %d , w %d " , rosBoxes_[i][j].y , rosBoxes_[i][j].x , DepthImageCopy_.size().height , DepthImageCopy_.size().width ); 
+		  boundingBox.Z = (float)DepthImageCopy_.at<float>(rosBoxes_[i][j].y , rosBoxes_[i][j].x);
+		  ROS_DEBUG("y %d , x %d , h %d , w %d , z %d " , rosBoxes_[i][j].y , rosBoxes_[i][j].x , DepthImageCopy_.size().height , DepthImageCopy_.size().width , boundingBox.Z); 
+		  
           boundingBoxesResults_.bounding_boxes.push_back(boundingBox);
 		  //ROS_DEBUG("Z %f , frame h %d , w %d , size h %d, w %d ", boundingBox.Z,  frameHeight_,  frameWidth_, DepthImageCopy_.rows,  DepthImageCopy_.cols);
 		  //frame h 1080 , w 1920 , size h 1080, w 1920 
@@ -724,3 +732,4 @@ void *YoloObjectDetector::publishInThread()
 
 
 } /* namespace darknet_ros*/
+
