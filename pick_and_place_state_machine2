@@ -53,20 +53,16 @@ class getPoseOfTheObject(smach.State):
 
     def collect(self, msg):
         for i, pose in enumerate(msg.poses):
-            if pose != Pose():
-                pos = pose.position
-                val = [round(pos.x,2), round(pos.y,2), round(pos.z,2)]
-                key = self.detection_names[i]                
-
+            if pose != Pose():                
                 try:
-                    (trans1,rot1) = self.listener.lookupTransform('map', 'yolo_output'+str(i), rospy.Time(0))
-		    (trans2,rot2) = self.listener.lookupTransform('om_with_tb3/camera_link', 'yolo_output'+str(i), rospy.Time(0))
-		    print 'Found a {} at {} num{} TF {} TF2 {}'.format(key, val, i, trans1, trans2)
-		    #rospy.logwarn('tf position %.3f , %.3f, %.3f' , trans.getOrigin().x(), trans.getOrigin().y() , trans.getOrigin().z())
+                    #(trans1,rot1) = self.listener.lookupTransform('map', 'yolo_output'+str(i), rospy.Time(0))
+		    (trans,rot) = self.listener.lookupTransform('om_with_tb3/camera_link', 'yolo_output'+str(i), rospy.Time(0))
+		    #print 'Found a {} at {} num{} TF {} '.format(key, val, i, trans)
                 except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-                    rospy.logwarn('there is no tf tf tf tf tf tf tf tf tf tf tf tf tf tf tf tf tf')
-		
-		
+                    rospy.logwarn('there is no tf ')
+		pos = pose.position
+		val = [round(pos.x,2), round(pos.y,2), round(pos.z,2), round(trans[0],2), round(trans[1],2) , round(trans[2],2)]
+                key = self.detection_names[i]  		
                 self.update_key(key, val)
 
     def update_key(self, key, val):
