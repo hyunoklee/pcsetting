@@ -41,7 +41,7 @@ import tf
 class getPoseOfTheObject(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded', 'aborted'],
-                                    output_keys=['output_object_pose'])
+                                    output_keys=['output_object_pose','output_object_pose_base_camera'])
         self.detected = {}
         self.detection_names = rospy.get_param('/darknet_ros/yolo_model/detection_classes/names')
 	#print(self.detection_names)
@@ -87,8 +87,17 @@ class getPoseOfTheObject(smach.State):
             object_pose.orientation.z = 0
 	    object_pose.orientation.w = 1
 	    userdata.output_object_pose = object_pose
-	    self.listener
-	    #rospy.logwarn('there is bottle %.2f, %.2f , %.2f', object_pose.position.x, object_pose.position.y, object_pose.position.z )	    
+	    
+	    object_pose.position.x  = self.detected["bottle"][-1][3]
+	    object_pose.position.y  = self.detected["bottle"][-1][4]
+	    object_pose.position.z  = self.detected["bottle"][-1][5]
+            object_pose.orientation.x = 0
+            object_pose.orientation.y = 0
+            object_pose.orientation.z = 0
+	    object_pose.orientation.w = 1
+	    userdata.output_object_pose_base_camera = object_pose
+		
+	    self.listener	    
             return 'succeeded'	
         else:
             rospy.logwarn('there is no bottle')
@@ -277,11 +286,13 @@ def main():
             return the_location_of_the_point
 	
         task_center.userdata.object_pose = Pose()
+	task_center.userdata.object_pose_atcamera = Pose()
         smach.StateMachine.add('GET_POSE_OF_THE_OBJECT', getPoseOfTheObject(),
-                                #transitions={'succeeded':'GO_TO_THE_OBJECT',
-                                transitions={'succeeded':'GET_POSE_OF_THE_OBJECT',		
+                                transitions={'succeeded':'GO_TO_THE_OBJECT',
+                                #transitions={'succeeded':'GET_POSE_OF_THE_OBJECT',		
                                             'aborted':'GET_POSE_OF_THE_OBJECT'},
-                                remapping={'output_object_pose':'object_pose'})
+                                remapping={'output_object_pose':'object_pose',
+					    'output_object_pose_base_camera':'object_pose_atcamera'})
 
         smach.StateMachine.add('GO_TO_THE_OBJECT',
                                 SimpleActionState(namespace + "/move_base", 
@@ -528,11 +539,13 @@ def main():
                                             'input_gripper':'open_gripper'})
 
             pick_center.userdata.object_pose = Pose()
+            pick_center.userdata.object_pose_atcamera = Pose()
             smach.StateMachine.add('GET_POSE_OF_THE_OBJECT', getPoseOfTheObject(),
                                     #transitions={'succeeded':'ALIGN_ARM_WITH_OBJECT',
                                     transitions={'succeeded':'GET_POSE_OF_THE_OBJECT',
                                                  'aborted':'aborted'},
-                                    remapping={'output_object_pose':'object_pose'})
+                                    remapping={'output_object_pose':'object_pose',
+					       'output_object_pose_base_camera':'object_pose_atcamera'})
 
             pick_center.userdata.align_arm_with_object_tolerance = 0.01
             smach.StateMachine.add('ALIGN_ARM_WITH_OBJECT',
