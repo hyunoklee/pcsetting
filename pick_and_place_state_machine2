@@ -22,6 +22,8 @@ from open_manipulator_msgs.msg import JointPosition
 from open_manipulator_msgs.msg import KinematicsPose
 from open_manipulator_msgs.srv import SetJointPosition
 from open_manipulator_msgs.srv import SetKinematicsPose
+from open_manipulator_msgs.srv import GetJointPosition
+from open_manipulator_msgs.srv import GetKinematicsPose
 
 # AR Markers
 from ar_track_alvar_msgs.msg import AlvarMarker
@@ -41,7 +43,7 @@ import tf
 class getPoseOfTheObject(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded', 'aborted'],
-                                    output_keys=['output_object_pose','output_object_pose_base_camera'])
+                                    output_keys=['output_object_pose'])
         self.detected = {}
         self.detection_names = rospy.get_param('/darknet_ros/yolo_model/detection_classes/names')
 	#print(self.detection_names)
@@ -73,8 +75,7 @@ class getPoseOfTheObject(smach.State):
 
     def execute(self, userdata):
 	time.sleep(0.5)
-        if len(self.detected) == 0:
-	
+        if len(self.detected) == 0:	
             rospy.logwarn('there is no object')
             return 'aborted'
         elif self.detected.has_key("bottle"):
@@ -87,7 +88,52 @@ class getPoseOfTheObject(smach.State):
             object_pose.orientation.z = 0
 	    object_pose.orientation.w = 1
 	    userdata.output_object_pose = object_pose
-	    
+            return 'succeeded'	
+        else:
+            rospy.logwarn('there is no bottle')
+            return 'aborted'   
+        self.object_pose_sub
+
+class getPoseOfTheObjectAtBaseLink(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['succeeded', 'aborted'],
+                                    output_keys=['output_object_pose'])
+        self.detected = {}
+        self.detection_names = rospy.get_param('/darknet_ros/yolo_model/detection_classes/names')
+	#print(self.detection_names)
+        #self.namespace = rospy.get_param("~robot_name")
+        #self.marker_pose_sub = rospy.Subscriber(self.namespace + '/ar_pose_marker', AlvarMarkers, self.arMarkerMsgCallback)
+	self.object_pose_sub = rospy.Subscriber('/cluster_decomposer/centroid_pose_array', PoseArray, self.collect)
+	self.listener = tf.TransformListener()
+        #self.OFFSET_FOR_GOAL_HEIGHT = 0.150
+
+    def collect(self, msg):
+        for i, pose in enumerate(msg.poses):
+            if pose != Pose():                
+                try:
+		    (trans,rot) = self.listener.lookupTransform('om_with_tb3/base_link', 'yolo_output'+str(i), rospy.Time(0))
+		    #(trans2,rot) = self.listener.lookupTransform('om_with_tb3/base_link', 'om_with_tb3/end_effector_link', rospy.Time(0))
+		    pos = pose.position
+		    val = [round(pos.x,2), round(pos.y,2), round(pos.z,2), round(trans[0],2), round(trans[1],2) , round(trans[2],2)]
+                    key = self.detection_names[i]  	
+		    #print 'Found a {} at {} num{} TF {} '.format(key, val, i, trans)	
+                    self.update_key(key, val)
+                except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                    rospy.logwarn('there is exception')
+
+    def update_key(self, key, val):
+        if self.detected.has_key(key):
+            self.detected[key].append(val)
+        else:
+            self.detected[key] = [val]
+
+    def execute(self, userdata):
+	time.sleep(0.5)
+        if len(self.detected) == 0:	
+            rospy.logwarn('there is no object')
+            return 'aborted'
+        elif self.detected.has_key("bottle"):	    
+            object_pose = Pose()
 	    object_pose.position.x  = self.detected["bottle"][-1][3]
 	    object_pose.position.y  = self.detected["bottle"][-1][4]
 	    object_pose.position.z  = self.detected["bottle"][-1][5]
@@ -95,9 +141,7 @@ class getPoseOfTheObject(smach.State):
             object_pose.orientation.y = 0
             object_pose.orientation.z = 0
 	    object_pose.orientation.w = 1
-	    userdata.output_object_pose_base_camera = object_pose
-		
-	    self.listener	    
+	    userdata.output_object_pose = object_pose	    
             return 'succeeded'	
         else:
             rospy.logwarn('there is no bottle')
@@ -287,12 +331,13 @@ def main():
 	
         task_center.userdata.object_pose = Pose()
 	task_center.userdata.object_pose_atcamera = Pose()
+
+	'''
         smach.StateMachine.add('GET_POSE_OF_THE_OBJECT', getPoseOfTheObject(),
                                 transitions={'succeeded':'GO_TO_THE_OBJECT',
                                 #transitions={'succeeded':'GET_POSE_OF_THE_OBJECT',		
                                             'aborted':'GET_POSE_OF_THE_OBJECT'},
-                                remapping={'output_object_pose':'object_pose',
-					    'output_object_pose_base_camera':'object_pose_atcamera'})
+                                remapping={'output_object_pose':'object_pose'})
 
         smach.StateMachine.add('GO_TO_THE_OBJECT',
                                 SimpleActionState(namespace + "/move_base", 
@@ -301,10 +346,11 @@ def main():
                                                 input_keys=['input_object_pose']),
                                    transitions={'succeeded':'GET_CLOSER_TO_OBJECT'},
                                    remapping={'input_object_pose':'object_pose'})
-	
+	'''
         smach.StateMachine.add('GET_CLOSER_TO_OBJECT', getCloserToGoal(),
                                 transitions={'succeeded':'PICK',
-                                            'failed':'aborted'})
+                                            'failed':'PICK'})
+                                            #'failed':'aborted'})
 	
         # Add states to the container
 	'''
@@ -458,9 +504,12 @@ def main():
             def eef_pose_request_cb(userdata, request):
                 eef = KinematicsPose()
                 eef.pose = userdata.input_pose
-                rospy.loginfo('eef.position.x : %f', eef.pose.position.x)
-                rospy.loginfo('eef.position.y : %f', eef.pose.position.y)
-                rospy.loginfo('eef.position.z : %f', eef.pose.position.z)
+                #rospy.loginfo('eef.position.x : %f', eef.pose.position.x)
+                #rospy.loginfo('eef.position.y : %f', eef.pose.position.y)
+                #rospy.loginfo('eef.position.z : %f', eef.pose.position.z)
+		eef.pose.position.z =0.1 
+		rospy.loginfo('eef.position: %.2f , %.2f, %.2f ', eef.pose.position.x, eef.pose.position.y, eef.pose.position.z  )
+
                 eef.max_velocity_scaling_factor = 1.0
                 eef.max_accelerations_scaling_factor = 1.0
                 eef.tolerance = userdata.input_tolerance
@@ -468,6 +517,31 @@ def main():
                 request.planning_group = userdata.input_planning_group
                 request.kinematics_pose = eef
                 return request
+
+            def eef_get_pose_request_cb(userdata, request):
+                request.planning_group = userdata.input_planning_group
+		return request
+
+            def eef_get_pose_response_cb(userdata, response):
+		rospy.loginfo("eef_get_pose_response_cb %.2f, %.2f, %.2f ", \
+		response.kinematics_pose.pose.position.x, response.kinematics_pose.pose.position.y, response.kinematics_pose.pose.position.z)
+		arm_pose = KinematicsPose()
+		arm_pose.pose.position.x = response.kinematics_pose.pose.position.x
+		arm_pose.pose.position.y = response.kinematics_pose.pose.position.y
+		arm_pose.pose.position.z = response.kinematics_pose.pose.position.z
+                userdata.output_arm_pose = arm_pose
+		return 'succeeded'
+
+            def eef_get_pose1_response_cb(userdata, response):
+		rospy.loginfo("eef_get_pose_response_cb %.2f, %.2f, %.2f ", \
+		response.kinematics_pose.pose.position.x, response.kinematics_pose.pose.position.y, response.kinematics_pose.pose.position.z)
+		arm_pose = KinematicsPose()
+		OFFSET_FOR_STRETCH = 0.030
+		arm_pose.pose.position.x = response.kinematics_pose.pose.position.x - OFFSET_FOR_STRETCH
+		arm_pose.pose.position.y = response.kinematics_pose.pose.position.y
+		arm_pose.pose.position.z = response.kinematics_pose.pose.position.z 
+                userdata.output_arm_pose = arm_pose
+		return 'succeeded'
 
             def align_arm_with_object_response_cb(userdata, response):
                 if response.is_planned == False:
@@ -514,6 +588,16 @@ def main():
                 rospy.sleep(1.)
                 return 'succeeded'
 
+            pick_center.userdata.object_pose = Pose()
+	    
+            smach.StateMachine.add('GET_POSE_OF_THE_OBJECT', getPoseOfTheObjectAtBaseLink(),
+                                    transitions={'succeeded':'SET_INIT_POSITION',
+                                    #transitions={'succeeded':'ALIGN_ARM_WITH_OBJECT',
+                                    #transitions={'succeeded':'GET_POSE_OF_THE_OBJECT',
+                                                 'aborted':'GET_POSE_OF_THE_OBJECT'},
+                                    remapping={'output_object_pose':'object_pose'})
+
+	    
             pick_center.userdata.init_position = [0.0, -0.65, 1.20, -0.54]
             smach.StateMachine.add('SET_INIT_POSITION',
                                     ServiceState(planning_group + '/moveit/set_joint_position',
@@ -534,18 +618,28 @@ def main():
                                                     response_cb=gripper_response_cb,
                                                     input_keys=['input_planning_group',
                                                                 'input_gripper']),
-                                   transitions={'succeeded':'GET_POSE_OF_THE_OBJECT'},
+                                   transitions={'succeeded':'ALIGN_ARM_WITH_OBJECT'},
                                    remapping={'input_planning_group':'planning_group',
                                             'input_gripper':'open_gripper'})
+	    
 
-            pick_center.userdata.object_pose = Pose()
-            pick_center.userdata.object_pose_atcamera = Pose()
-            smach.StateMachine.add('GET_POSE_OF_THE_OBJECT', getPoseOfTheObject(),
-                                    #transitions={'succeeded':'ALIGN_ARM_WITH_OBJECT',
-                                    transitions={'succeeded':'GET_POSE_OF_THE_OBJECT',
-                                                 'aborted':'aborted'},
-                                    remapping={'output_object_pose':'object_pose',
-					       'output_object_pose_base_camera':'object_pose_atcamera'})
+	    
+	    #defualt end point
+	    #0.04, 0.00, 0.22 	    
+	    '''
+	    pick_center.userdata.arm_kinematics_pose = KinematicsPose()
+            smach.StateMachine.add('GET_KINEMATICS_POSITION',
+                                    ServiceState(planning_group + '/moveit/get_kinematics_pose',
+                                                    GetKinematicsPose,
+                                                    request_cb=eef_get_pose_request_cb,
+                                                    response_cb=eef_get_pose_response_cb,
+                                                    input_keys=['input_planning_group'],
+						    output_keys=['output_arm_pose']),                                                    
+                                   transitions={'succeeded':'GET_KINEMATICS_POSITION',
+                                                'aborted':'GET_KINEMATICS_POSITION'},
+                                   remapping={'input_planning_group':'planning_group',
+					      'output_arm_pose':'arm_kinematics_pose'})
+	    '''
 
             pick_center.userdata.align_arm_with_object_tolerance = 0.01
             smach.StateMachine.add('ALIGN_ARM_WITH_OBJECT',
@@ -680,7 +774,18 @@ def main():
                 return 'succeeded'
 
             place_center.userdata.ready_position = [0.0, -1.05, 0.35, 0.70]
+
             smach.StateMachine.add('SET_INIT_POSITION',
+                                    ServiceState(planning_group + '/moveit/set_joint_position',
+                                                    SetJointPosition,
+                                                    request_cb=joint_position_request_cb,
+                                                    response_cb=joint_position_response_cb,
+                                                    input_keys=['input_planning_group',
+                                                                'input_position']),
+                                   transitions={'succeeded':'GET_POSE_OF_THE_BOX'},
+                                   remapping={'input_planning_group':'planning_group',
+                                            'input_position':'ready_position'})
+            smach.StateMachine.add('GET_INIT_POSITION',
                                     ServiceState(planning_group + '/moveit/set_joint_position',
                                                     SetJointPosition,
                                                     request_cb=joint_position_request_cb,
