@@ -1,0 +1,250 @@
+#!/usr/bin/env python
+
+import rospy
+from math import pow, atan2, sqrt
+from tf.transformations import *
+
+import smach
+import smach_ros
+from smach_ros import SimpleActionState
+from smach_ros import ServiceState
+
+import threading
+
+# Navigation
+from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+from nav_msgs.msg import Odometry
+from geometry_msgs.msg import Twist
+
+# Manipulator 
+from geometry_msgs.msg import Pose
+from open_manipulator_msgs.msg import JointPosition
+from open_manipulator_msgs.msg import KinematicsPose
+from open_manipulator_msgs.srv import SetJointPosition
+from open_manipulator_msgs.srv import SetKinematicsPose
+from open_manipulator_msgs.srv import GetJointPosition
+from open_manipulator_msgs.srv import GetKinematicsPose
+
+# AR Markers
+from ar_track_alvar_msgs.msg import AlvarMarker
+from ar_track_alvar_msgs.msg import AlvarMarkers
+
+from geometry_msgs.msg import PoseArray, Pose
+from detection_clustering import DetectionClustering
+
+import time
+from tf.transformations import euler_from_quaternion, quaternion_from_euler
+
+from darknet_ros_msgs.msg import BoundingBoxes
+from darknet_ros_msgs.msg import BoundingBox
+
+import tf
+
+class getPoseOfTheObjectAtBaseLink(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['succeeded', 'aborted'],
+                                    output_keys=['output_object_pose'])
+	self.object_pose_sub = rospy.Subscriber('/darknet_ros/bounding_boxes', BoundingBoxes, self.collect)
+        self.cupboundingBox = BoundingBox()
+	self.pick_server = rospy.Service('/open_manipulator/goal_joint_space_path', SetJointPosition, self.resultOfPickUpMsgCallback)
+
+    def resultOfPickUpMsgCallback(self, req):
+        if req.state == "Success":
+            rospy.logwarn("Success to pick up")
+
+            self.arMarkerLaunched(OFF)
+            self.pickLaunched(OFF)
+            self.manipulationLaunched(OFF)       
+
+            if self.pre_step == self.StepOfPickAndPlace.pick_object_up.value:
+                self.step = self.StepOfPickAndPlace.turn_around.value
+        else:
+            rospy.logwarn("Failed to Pick up, Please retry step") # TODO
+
+
+    def collect(self, msg):
+        for i, boundingBox in enumerate(msg.bounding_boxes):
+            #print 'boundingBoxe {} {} '.format(i, boundingBox)
+	    if boundingBox.Class == "cup" or boundingBox.Class == "wine glass" :
+                self.cupboundingBox = boundingBox
+		rospy.logwarn('read cup data')
+
+    def execute(self, userdata):
+	#데이타를 읽어서 팔을 이동시키는 Code 작성 .
+	#현재 읽어서 팔을 이동시키는 Code 작성 . 
+	return 'succeeded'
+
+def main():
+    rospy.init_node('pick_and_place_state_machine2')
+    namespace = rospy.get_param("~robot_name")
+    planning_group = rospy.get_param("~planning_group")
+
+    with open('/home/hyunoklee/servealcoholfile.txt') as data:
+        servealcoholfile = [[float(i) for i in line.split(",")] for line in data.readlines()]
+    with open('/home/hyunoklee/pickcupfile.txt') as data:
+        pickcupfile = [[float(i) for i in line.split(",")] for line in data.readlines()]
+    #print(numbers[0])
+
+    pick_center = smach.StateMachine(outcomes=['succeeded','aborted','preempted'])
+
+    with pick_center:
+        pick_center.userdata.planning_group = planning_group
+
+        def joint_position_request_cb(userdata, request):
+            rospy.logwarn('joint_position_request_cb')
+            print(userdata.input_file[userdata.count])
+            request.joint_position.joint_name = ['joint1','joint2','joint3','joint4']
+            request.joint_position.position = [userdata.input_file[userdata.count][0], userdata.input_file[userdata.count][1], userdata.input_file[userdata.count][2], userdata.input_file[userdata.count][3]]
+            
+	    if userdata.count == 0:
+	        request.path_time = 2
+	    else :
+	        request.path_time = 0.2
+            return request
+
+        def joint_position_response_cb(userdata, response):
+            if response.is_planned == False:
+                return 'aborted'
+            else:
+                return 'succeeded'
+
+        def gripper_request_cb(userdata, request):
+            rospy.logwarn('gripper_request_cb2')
+            print(userdata.input_file[userdata.count])
+            request.joint_position.joint_name = ['gripper']
+            request.joint_position.position = [userdata.input_file[userdata.count][4]]
+            request.path_time = 0.1
+            userdata.count = userdata.count + 1
+            return request
+        def gripper_response_cb(userdata, response):
+            rospy.logwarn('gripper_request_cb..................... %d, %d',userdata.count,len(userdata.input_file))
+            if response.is_planned == False:
+                return 'aborted'
+            elif userdata.count > ( len(userdata.input_file) - 1 ):
+                rospy.sleep(0.02)
+                userdata.count = 0
+                rospy.logwarn('gripper_request_cb2 preempted.....................................')
+                return 'preempted'
+            else:
+	        if userdata.count == 1:
+		    rospy.sleep(2)
+	        else :
+		    rospy.sleep(0.02)
+                return 'succeeded'
+
+        def joint_position_request_cb2(userdata, request):
+            #joint = JointPosition()
+            #joint.position = userdata.input_position
+            #joint.max_velocity_scaling_factor = 1.0
+            #joint.max_accelerations_scaling_factor = 1.0
+
+            #request.planning_group = userdata.input_planning_group
+            #request.joint_position = joint
+
+            request.joint_position.joint_name = ['joint1','joint2','joint3','joint4']
+            request.joint_position.position = userdata.input_position
+            request.path_time = 2.5
+            return request
+
+        def joint_position_response_cb2(userdata, response):
+            if response.is_planned == False:
+                return 'aborted'
+            else:
+                rospy.sleep(3.)
+                return 'succeeded'
+
+
+        pick_center.userdata.count = 0;
+        pick_center.userdata.servealcoholfile = servealcoholfile;
+        pick_center.userdata.pickcupfile = pickcupfile;
+
+        pick_center.userdata.object_pose = Pose()
+	    
+        smach.StateMachine.add('GET_POSE_OF_THE_OBJECT', getPoseOfTheObjectAtBaseLink(),
+                                transitions={'succeeded':'succeeded',
+                                #transitions={'succeeded':'ALIGN_ARM_WITH_OBJECT',
+                                #transitions={'succeeded':'GET_POSE_OF_THE_OBJECT',
+                                              'aborted':'GET_POSE_OF_THE_OBJECT'},
+                                remapping={'output_object_pose':'object_pose'})
+
+        '''smach.StateMachine.add('SERVE_ALCOHOL_POSITION',
+                                ServiceState('/open_manipulator/goal_joint_space_path',
+                                                SetJointPosition,
+                                                request_cb=joint_position_request_cb,
+                                                response_cb=joint_position_response_cb,
+                                                input_keys=['input_planning_group',
+                                                            'input_position','count','input_file'],
+						output_keys=['count']),
+                               #transitions={'succeeded':'SERVE_ALCOHOL_GRIPPER'},
+                               transitions={'succeeded':'SERVE_ALCOHOL_GRIPPER'},
+                               remapping={'input_planning_group':'planning_group',
+                                          'input_position':'init_position',
+                                          'input_file':'servealcoholfile'})
+	
+        smach.StateMachine.add('SERVE_ALCOHOL_GRIPPER',
+                                ServiceState('/open_manipulator/goal_tool_control',
+                                                SetJointPosition,
+                                                request_cb=gripper_request_cb,
+                                                response_cb=gripper_response_cb,
+                                                input_keys=['input_planning_group',
+                                                            'input_gripper','count','input_file'],
+						output_keys=['count']),
+                               transitions={'succeeded':'SERVE_ALCOHOL_POSITION',
+				            'preempted':'PICK_CUP_POSITION'},
+                               remapping={'input_planning_group':'planning_group',
+                                          'input_gripper':'open_gripper',
+                                          'input_file':'servealcoholfile'})
+
+        smach.StateMachine.add('PICK_CUP_POSITION',
+                                ServiceState('/open_manipulator/goal_joint_space_path',
+                                                SetJointPosition,
+                                                request_cb=joint_position_request_cb,
+                                                response_cb=joint_position_response_cb,
+                                                input_keys=['input_planning_group',
+                                                            'input_position','count','input_file'],
+						output_keys=['count']),
+                               #transitions={'succeeded':'SERVE_ALCOHOL_GRIPPER'},
+                               transitions={'succeeded':'PICK_CUP_GRIPPER'},
+                               remapping={'input_planning_group':'planning_group',
+                                          'input_position':'init_position',
+                                          'input_file':'pickcupfile'})
+	
+        smach.StateMachine.add('PICK_CUP_GRIPPER',
+                                ServiceState('/open_manipulator/goal_tool_control',
+                                                SetJointPosition,
+                                                request_cb=gripper_request_cb,
+                                                response_cb=gripper_response_cb,
+                                                input_keys=['input_planning_group',
+                                                            'input_gripper','count','input_file'],
+						output_keys=['count']),
+                               transitions={'succeeded':'PICK_CUP_POSITION',
+				            'preempted':'aborted'},
+                               remapping={'input_planning_group':'planning_group',
+                                          'input_gripper':'open_gripper',
+                                          'input_file':'pickcupfile'})'''
+	
+        '''pick_center.userdata.holding_position = [0.0, -1.0, -0.571, 1.701]
+        smach.StateMachine.add('SEARCH_INIT_POSITION',
+                                ServiceState('/open_manipulator/goal_joint_space_path',
+                                             SetJointPosition,
+                                             request_cb=joint_position_request_cb2,
+                                             response_cb=joint_position_response_cb2,
+                                             input_keys=['input_planning_group',
+                                                         'input_position']),
+                                transitions={'succeeded':'succeeded'},
+                                remapping={'input_planning_group':'planning_group',
+                                            'input_position':'holding_position'})'''
+
+
+    sis = smach_ros.IntrospectionServer('server_name', pick_center, '/PICK_CENTER')
+    sis.start()
+
+    # Execute SMACH plan
+    outcome = pick_center.execute()
+
+    # Wait for ctrl-c to stop the application
+    rospy.spin()
+    sis.stop()
+
+if __name__ == '__main__':
+    main()
