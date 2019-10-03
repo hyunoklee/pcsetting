@@ -43,24 +43,11 @@ import tf
 class getPoseOfTheObjectAtBaseLink(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded', 'aborted'],
-                                    output_keys=['output_object_pose'])
+                                    input_keys=['input_planning_group'],
+                                    output_keys=['output_object_pose'],)
 	self.object_pose_sub = rospy.Subscriber('/darknet_ros/bounding_boxes', BoundingBoxes, self.collect)
         self.cupboundingBox = BoundingBox()
-	self.pick_server = rospy.Service('/open_manipulator/goal_joint_space_path', SetJointPosition, self.resultOfPickUpMsgCallback)
-
-    def resultOfPickUpMsgCallback(self, req):
-        if req.state == "Success":
-            rospy.logwarn("Success to pick up")
-
-            self.arMarkerLaunched(OFF)
-            self.pickLaunched(OFF)
-            self.manipulationLaunched(OFF)       
-
-            if self.pre_step == self.StepOfPickAndPlace.pick_object_up.value:
-                self.step = self.StepOfPickAndPlace.turn_around.value
-        else:
-            rospy.logwarn("Failed to Pick up, Please retry step") # TODO
-
+        self.set_joint_position = rospy.ServiceProxy('/open_manipulator/goal_joint_space_path', SetJointPosition)
 
     def collect(self, msg):
         for i, boundingBox in enumerate(msg.bounding_boxes):
@@ -70,8 +57,21 @@ class getPoseOfTheObjectAtBaseLink(smach.State):
 		rospy.logwarn('read cup data')
 
     def execute(self, userdata):
-	#데이타를 읽어서 팔을 이동시키는 Code 작성 .
-	#현재 읽어서 팔을 이동시키는 Code 작성 . 
+        print "Send Position "
+        try: 
+	    joint_position = JointPosition()
+	    planning_group = userdata.input_planning_group
+	    joint_position.joint_name = ['joint1','joint2','joint3','joint4']
+            joint_position.position =  [0.0, -1.0, -0.571, 1.701]
+            path_time = 2.5
+            resp1 = self.set_joint_position(planning_group,joint_position, path_time)
+	    print 'resp1 {}'.format(resp1.is_planned)  
+        except rospy.ServiceException, e:
+            print "Service call failed: %s"%e
+
+        print "Get Position "
+         
+
 	return 'succeeded'
 
 def main():
@@ -165,7 +165,8 @@ def main():
                                 #transitions={'succeeded':'ALIGN_ARM_WITH_OBJECT',
                                 #transitions={'succeeded':'GET_POSE_OF_THE_OBJECT',
                                               'aborted':'GET_POSE_OF_THE_OBJECT'},
-                                remapping={'output_object_pose':'object_pose'})
+                                remapping={'output_object_pose':'object_pose',
+                                           'input_planning_group':'planning_group'})
 
         '''smach.StateMachine.add('SERVE_ALCOHOL_POSITION',
                                 ServiceState('/open_manipulator/goal_joint_space_path',
