@@ -38,7 +38,30 @@ from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from darknet_ros_msgs.msg import BoundingBoxes
 from darknet_ros_msgs.msg import BoundingBox
 
+from sensor_msgs.msg import JointState
+
 import tf
+
+class wait_command(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['succeeded','preempted' ,'aborted'])
+    def execute(self, userdata):
+        s = input('Enter the mode you want. \n 1. Pour into a glass \n 2. Cheers \n')
+        i = int(s)        
+        print(i)
+        if i == 1 :	
+            rospy.logwarn('Start pour mode')
+            return 'succeeded'
+        elif i == 2 :
+            rospy.logwarn('Start cheers mode ')
+            return 'preempted'
+        elif i == 3 :
+            rospy.logwarn('Down cup mode ')
+            return 'aborted'
+        else :
+            rospy.logwarn('not support command')
+            return 'aborted' 
+
 
 class getPoseOfTheObjectAtBaseLink(smach.State):
     def __init__(self):
@@ -48,13 +71,39 @@ class getPoseOfTheObjectAtBaseLink(smach.State):
 	self.object_pose_sub = rospy.Subscriber('/darknet_ros/bounding_boxes', BoundingBoxes, self.collect)
         self.cupboundingBox = BoundingBox()
         self.set_joint_position = rospy.ServiceProxy('/open_manipulator/goal_joint_space_path', SetJointPosition)
+        self.set_kinematics_position = rospy.ServiceProxy('/open_manipulator/goal_task_space_path_position_only', SetKinematicsPose)
+	self.set_joint_position_from_present = rospy.ServiceProxy('/open_manipulator/goal_joint_space_path_from_present', SetJointPosition)
+        self.open_manipulator_joint_states_sub_ = rospy.Subscriber('/open_manipulator/joint_states', JointState, self.jointStatesCallback)
+        self.open_manipulator_kinematics_pose_sub_ = rospy.Subscriber('/open_manipulator/gripper/kinematics_pose', KinematicsPose, self.kinematicsPoseCallback)
+        self.last_detect_time = rospy.get_rostime()
+        self.jointStates = [0.0, 0.0, 0.0, 0.0, 0.0]
+	self.kinematicsStates = [0.0, 0.0, 0.0]
+
+    def kinematicsPoseCallback(self, msg):
+	#pass
+	#rospy.logwarn('jointStatesCallback %d ', len(msg.position) )
+        #for i, pose in enumerate(msg.position):
+        self.kinematicsStates[0] = msg.pose.position.x
+        self.kinematicsStates[1] = msg.pose.position.y
+        self.kinematicsStates[2] = msg.pose.position.z
+        #rospy.logwarn(' kinematicsPoseCallback %.2f , %.2f, %.2f  ', self.kinematicsStates[0], self.kinematicsStates[1], self.kinematicsStates[2] )
+        #self.jointStates[i] = pose
+            #print 'boundingBoxe {} {} '.format(i, pose)
+
+    def jointStatesCallback(self, msg):
+	#pass
+	#rospy.logwarn('jointStatesCallback %d ', len(msg.position) )
+        for i, pose in enumerate(msg.position):
+            self.jointStates[i] = pose
+            #print 'boundingBoxe {} {} '.format(i, pose)
 
     def collect(self, msg):
         for i, boundingBox in enumerate(msg.bounding_boxes):
             #print 'boundingBoxe {} {} '.format(i, boundingBox)
 	    if boundingBox.Class == "cup" or boundingBox.Class == "wine glass" :
                 self.cupboundingBox = boundingBox
-		rospy.logwarn('read cup data')
+		self.last_detect_time = rospy.get_rostime()
+		rospy.logwarn('cup withd %d', self.cupboundingBox.xmax - self.cupboundingBox.xmin )
 
     def execute(self, userdata):
         print "Send Position "
@@ -62,17 +111,136 @@ class getPoseOfTheObjectAtBaseLink(smach.State):
 	    joint_position = JointPosition()
 	    planning_group = userdata.input_planning_group
 	    joint_position.joint_name = ['joint1','joint2','joint3','joint4']
-            joint_position.position =  [0.0, -1.0, -0.571, 1.701]
+            joint_position.position =  [0, -1.0, -0.571, 1.701]
             path_time = 2.5
             resp1 = self.set_joint_position(planning_group,joint_position, path_time)
-	    print 'resp1 {}'.format(resp1.is_planned)  
+	    #print 'resp1 {}'.format(resp1.is_planned) 
+	    rospy.sleep(3) 
+        except rospy.ServiceException, e:
+            print "Service call failed: %s"%e
+	#return 'succeeded'
+        '''try: 
+	    joint_position = JointPosition()
+	    planning_group = userdata.input_planning_group
+	    joint_position.joint_name = ['joint1','joint2','joint3','joint4']
+            joint_position.position =  [0.785, 0, 0, 0]
+            path_time = 2.5
+            resp1 = self.set_joint_position_from_present(planning_group,joint_position, path_time)
+	    print 'resp1 {}'.format(resp1.is_planned) 
+	    rospy.sleep(3) 
+        except rospy.ServiceException, e:
+            print "Service call failed: %s"%e'''
+
+	while 1:
+	    #rospy.sleep(1) 
+            '''if self.jointStates[0]>1.57 or self.jointStates[0]<-1.57:
+		rospy.logwarn(" over range ") 	
+	        self.object_pose_sub.unregister()
+	        self.open_manipulator_joint_states_sub_.unregister()
+	        return 'succeeded'''
+	                
+	    duration = rospy.get_rostime().to_sec() - self.last_detect_time.to_sec()
+	    rospy.logwarn("duration %.2f",duration ) 	
+	    if duration > 1 :
+	        #rospy.logwarn(" no object.. ")
+		rospy.sleep(1) 	
+		# scan start 
+                continue
+	    #print 'duration {} '.format(duration)
+	    #rospy.logwarn(" duration %d ", rospy.get_rostime() - self.last_detect_time )        	    
+            if self.cupboundingBox.X < (390-10) :
+                #turn left
+		rospy.logwarn('turn left %d , %d ', self.cupboundingBox.X, self.cupboundingBox.Y) 
+                try: 
+	            joint_position = JointPosition()
+	            planning_group = userdata.input_planning_group
+	            joint_position.joint_name = ['joint1','joint2','joint3','joint4']
+                    joint_position.position =  [0.05, 0, 0, 0]
+                    path_time = 0.7
+                    resp1 = self.set_joint_position_from_present(planning_group,joint_position, path_time)
+                    rospy.sleep(0.6)  
+	            #print 'resp1 {}'.format(resp1.is_planned) 
+	            #rospy.sleep(3) 
+                except rospy.ServiceException, e:
+                    print "Service call failed: %s"%e
+
+            elif self.cupboundingBox.X > (390+10) :
+                #turn right
+		rospy.logwarn('turn right %d , %d ', self.cupboundingBox.X, self.cupboundingBox.Y) 
+                try: 
+	            joint_position = JointPosition()
+	            planning_group = userdata.input_planning_group
+	            joint_position.joint_name = ['joint1','joint2','joint3','joint4']
+                    joint_position.position =  [-0.05, 0, 0, 0]
+                    path_time = 0.7
+                    resp1 = self.set_joint_position_from_present(planning_group,joint_position, path_time)
+                    rospy.sleep(0.6)  
+	            #print 'resp1 {}'.format(resp1.is_planned) 
+	            #rospy.sleep(3) 
+                except rospy.ServiceException, e:
+                    print "Service call failed: %s"%e
+            else :
+		rospy.logwarn('center break %d , %d ', self.cupboundingBox.X, self.cupboundingBox.Y) 
+                break
+
+            rospy.logwarn('cupboundingBox ...... %d , %d ', self.cupboundingBox.X, self.cupboundingBox.Y) 
+            '''try: 
+	        joint_position = JointPosition()
+	        planning_group = userdata.input_planning_group
+	        joint_position.joint_name = ['joint1','joint2','joint3','joint4']
+                joint_position.position =  [0.3, -1.0, -0.571, 1.701]
+                path_time = 2.5
+                resp1 = self.set_joint_position(planning_group,joint_position, path_time)
+	        print 'resp1 {}'.format(resp1.is_planned)  
+            except rospy.ServiceException, e:
+                print "Service call failed: %s"%e'''
+
+        print "Get Position "
+
+        print "Send Kinemetics "
+        try: 
+	    planning_group = userdata.input_planning_group
+            end_effector_name = "gripper";
+            kinematics_pose = KinematicsPose()
+
+            distance = math.sqrt(self.kinematicsStates[0]**2+self.kinematicsStates[1]**2)
+            cup_width = self.cupboundingBox.xmax - self.cupboundingBox.xmin
+            z_value = 0
+            stetch_offset = 0.0
+
+            if cup_width < 75 :
+                cup_width = 75 
+	    elif cup_width >145 :
+                cup_width = 145
+
+	    if cup_width < 100 :
+                stetch_offset = -0.5*cup_width + 70 
+	    elif cup_width >= 100 :
+                stetch_offset = -0.2*cup_width + 39 	    
+
+            stetch_offset = stetch_offset/100 -0.03
+            
+            kinematics_pose.pose.position.x = self.kinematicsStates[0]*(distance+stetch_offset)/distance #x
+            kinematics_pose.pose.position.y = self.kinematicsStates[1]*(distance+stetch_offset)/distance #y
+            kinematics_pose.pose.position.z = self.kinematicsStates[2] #z
+
+            rospy.logwarn('%.2f ,%.2f ,%.2f -> %.2f ,%.2f ,%.2f ', self.kinematicsStates[0], self.kinematicsStates[1], self.kinematicsStates[2], \
+            kinematics_pose.pose.position.x, kinematics_pose.pose.position.y, kinematics_pose.pose.position.z) 
+	    
+            path_time = 5
+            resp1 = self.set_kinematics_position(planning_group, end_effector_name, kinematics_pose, path_time)
+	    print 'kinemetics resp1 {}'.format(resp1.is_planned) 
+	    rospy.sleep(5) 
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e
 
-        print "Get Position "
          
-
+	#self.object_pose_sub.unregister()
+	#self.open_manipulator_joint_states_sub_.unregister()
 	return 'succeeded'
+        self.open_manipulator_joint_states_sub_ 
+        self.open_manipulator_kinematics_pose_sub_
+        self.object_pose_sub
 
 def main():
     rospy.init_node('pick_and_place_state_machine2')
@@ -159,16 +327,27 @@ def main():
         pick_center.userdata.pickcupfile = pickcupfile;
 
         pick_center.userdata.object_pose = Pose()
-	    
-        smach.StateMachine.add('GET_POSE_OF_THE_OBJECT', getPoseOfTheObjectAtBaseLink(),
-                                transitions={'succeeded':'succeeded',
-                                #transitions={'succeeded':'ALIGN_ARM_WITH_OBJECT',
-                                #transitions={'succeeded':'GET_POSE_OF_THE_OBJECT',
-                                              'aborted':'GET_POSE_OF_THE_OBJECT'},
-                                remapping={'output_object_pose':'object_pose',
-                                           'input_planning_group':'planning_group'})
 
-        '''smach.StateMachine.add('SERVE_ALCOHOL_POSITION',
+        smach.StateMachine.add('PICK_CUP_POSITION',
+                                ServiceState('/open_manipulator/goal_joint_space_path',
+                                                SetJointPosition,
+                                                request_cb=joint_position_request_cb,
+                                                response_cb=joint_position_response_cb,
+                                                input_keys=['input_planning_group',
+                                                            'input_position','count','input_file'],
+						output_keys=['count']),
+                               #transitions={'succeeded':'SERVE_ALCOHOL_GRIPPER'},
+                               transitions={'succeeded':'WAIT_COMMAND'},
+                               remapping={'input_planning_group':'planning_group',
+                                          'input_position':'init_position',
+                                          'input_file':'pickcupfile'})
+        
+        smach.StateMachine.add('WAIT_COMMAND', wait_command(),
+                                transitions={'succeeded':'SERVE_ALCOHOL_POSITION',
+                                             'preempted':'CHEERS_SEQUENCE',
+                                              'aborted':'WAIT_COMMAND'})
+
+        smach.StateMachine.add('SERVE_ALCOHOL_POSITION',
                                 ServiceState('/open_manipulator/goal_joint_space_path',
                                                 SetJointPosition,
                                                 request_cb=joint_position_request_cb,
@@ -195,20 +374,6 @@ def main():
                                remapping={'input_planning_group':'planning_group',
                                           'input_gripper':'open_gripper',
                                           'input_file':'servealcoholfile'})
-
-        smach.StateMachine.add('PICK_CUP_POSITION',
-                                ServiceState('/open_manipulator/goal_joint_space_path',
-                                                SetJointPosition,
-                                                request_cb=joint_position_request_cb,
-                                                response_cb=joint_position_response_cb,
-                                                input_keys=['input_planning_group',
-                                                            'input_position','count','input_file'],
-						output_keys=['count']),
-                               #transitions={'succeeded':'SERVE_ALCOHOL_GRIPPER'},
-                               transitions={'succeeded':'PICK_CUP_GRIPPER'},
-                               remapping={'input_planning_group':'planning_group',
-                                          'input_position':'init_position',
-                                          'input_file':'pickcupfile'})
 	
         smach.StateMachine.add('PICK_CUP_GRIPPER',
                                 ServiceState('/open_manipulator/goal_tool_control',
@@ -222,9 +387,9 @@ def main():
 				            'preempted':'aborted'},
                                remapping={'input_planning_group':'planning_group',
                                           'input_gripper':'open_gripper',
-                                          'input_file':'pickcupfile'})'''
+                                          'input_file':'pickcupfile'})
 	
-        '''pick_center.userdata.holding_position = [0.0, -1.0, -0.571, 1.701]
+        pick_center.userdata.holding_position = [0.0, -1.0, -0.571, 1.701]
         smach.StateMachine.add('SEARCH_INIT_POSITION',
                                 ServiceState('/open_manipulator/goal_joint_space_path',
                                              SetJointPosition,
@@ -234,7 +399,16 @@ def main():
                                                          'input_position']),
                                 transitions={'succeeded':'succeeded'},
                                 remapping={'input_planning_group':'planning_group',
-                                            'input_position':'holding_position'})'''
+                                            'input_position':'holding_position'})
+
+	    
+        smach.StateMachine.add('CHEERS_SEQUENCE', getPoseOfTheObjectAtBaseLink(),
+                                transitions={'succeeded':'WAIT_COMMAND',
+                                #transitions={'succeeded':'ALIGN_ARM_WITH_OBJECT',
+                                #transitions={'succeeded':'GET_POSE_OF_THE_OBJECT',
+                                              'aborted':'WAIT_COMMAND'},
+                                remapping={'output_object_pose':'object_pose',
+                                           'input_planning_group':'planning_group'})
 
 
     sis = smach_ros.IntrospectionServer('server_name', pick_center, '/PICK_CENTER')
