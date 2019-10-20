@@ -60,6 +60,24 @@ class cheersActionByYoloJsk(smach.State):
         self.jointStates = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 	self.kinematicsStates = [0.0, 0.0, 0.0]
         rospy.logwarn(' cheersActionByYoloJsk ')
+        self.trans = [0.0 , 0.0 , 0.0]
+        self.command_Key_sub = rospy.Subscriber('command_Key', String, self.commandKeyCallback)
+        self.mode = 9
+
+    def commandKeyCallback(self, msg):
+        #rospy.logwarn('1commandKeyCallback %d', msg.data) 
+        if msg.data == "0" :
+            self.mode = 0
+        elif msg.data == "1" :   
+            self.mode = 1
+        elif msg.data == "2" :
+            self.mode = 2
+        elif msg.data == "3" :
+            self.mode = 3
+        elif msg.data == "8" :
+            self.mode = 8
+        else :
+            pass
 
     def kinematicsPoseCallback(self, msg):
         self.kinematicsStates[0] = msg.pose.position.x
@@ -78,12 +96,16 @@ class cheersActionByYoloJsk(smach.State):
             if pose != Pose():                
                 try:
                     #(trans1,rot1) = self.listener.lookupTransform('map', 'yolo_output'+str(i), rospy.Time(0))
-		    (trans,rot) = self.listener.lookupTransform('camera_link', 'yolo_output'+str(i), rospy.Time(0))
+		    #(trans,rot) = self.listener.lookupTransform('camera_link', 'yolo_output'+str(i), rospy.Time(0))
+		    (trans,rot) = self.listener.lookupTransform('link1', 'yolo_output'+str(i), rospy.Time(0))
 		    pos = pose.position
 		    val = [round(pos.x,2), round(pos.y,2), round(pos.z,2), round(trans[0],2), round(trans[1],2) , round(trans[2],2)]
                     key = self.detection_names[i]  		
                     #self.update_key(key, val)
-		    print 'Found a {} at {} num{} TF {} '.format(key, val, i, trans)
+		    #print 'Found a {} at {} num{} TF {} '.format(key, val, i, trans)
+                    self.trans[0] = round(trans[0],2)
+                    self.trans[1] = round(trans[1],2)
+                    self.trans[2] = round(trans[2],2)
                 except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                     rospy.logwarn('there is no tf ')
 
@@ -98,19 +120,27 @@ class cheersActionByYoloJsk(smach.State):
 
     def execute(self, userdata):
         print "Send Position by Joint Control "
-        try: 
-	    joint_position = JointPosition()
-	    planning_group = userdata.input_planning_group
-	    joint_position.joint_name = ['joint1','joint2','joint3','joint4']
-            joint_position.position =  [0, -1.0, -0.571, 1.701]
-            path_time = 2.5
-            resp1 = self.set_joint_position(planning_group,joint_position, path_time)
+        joint_position1 = JointPosition()
+        joint_position2 = JointPosition()
+        joint_position1.position =  [0, -1.551, -0.234, 1.98]
+        joint_position2.position =  [0, -1.292, 0.242, 1.342]
+
+        planning_group = userdata.input_planning_group
+        joint_position1.joint_name = ['joint1','joint2','joint3','joint4']  
+        joint_position2.joint_name = ['joint1','joint2','joint3','joint4'] 
+        path_time = 2.5
+
+        try:
+            resp1 = self.set_joint_position(planning_group,joint_position1, path_time)
 	    #print 'resp1 {}'.format(resp1.is_planned) 
-	    rospy.sleep(3) 
+	    rospy.sleep(path_time) 
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e
 
 	while 1:
+
+            if self.mode == 8 :
+                return 'succeeded' 
 	                
 	    object_detect_duration = rospy.get_rostime().to_sec() - self.last_detect_time.to_sec()
 	    #rospy.logwarn("duration %.2f",object_detect_duration ) 	
@@ -118,99 +148,49 @@ class cheersActionByYoloJsk(smach.State):
 	        rospy.logwarn(" no object.. ")
 		rospy.sleep(1) 	
                 continue
-
-            if self.cupboundingBox.X < (390-10) :
-                #turn left
-		rospy.logwarn('turn left %d , %d ', self.cupboundingBox.X, self.cupboundingBox.Y) 
-                try: 
-	            joint_position = JointPosition()
-	            planning_group = userdata.input_planning_group
-	            joint_position.joint_name = ['joint1','joint2','joint3','joint4']
-                    joint_position.position =  [0.05, 0, 0, 0]
-                    path_time = 0.7
-                    #resp1 = self.set_joint_position_from_present(planning_group,joint_position, path_time)
-                    rospy.sleep(0.6)  
-	            #print 'resp1 {}'.format(resp1.is_planned) 
-                except rospy.ServiceException, e:
-                    print "Service call failed: %s"%e
-
-            elif self.cupboundingBox.X > (390+10) :
-                #turn right
-		rospy.logwarn('turn right %d , %d ', self.cupboundingBox.X, self.cupboundingBox.Y) 
-                try: 
-	            joint_position = JointPosition()
-	            planning_group = userdata.input_planning_group
-	            joint_position.joint_name = ['joint1','joint2','joint3','joint4']
-                    joint_position.position =  [-0.05, 0, 0, 0]
-                    path_time = 0.7
-                    #resp1 = self.set_joint_position_from_present(planning_group,joint_position, path_time)
-                    rospy.sleep(0.6)  
-	            #print 'resp1 {}'.format(resp1.is_planned) 
-                except rospy.ServiceException, e:
-                    print "Service call failed: %s"%e
-            else :
-		rospy.logwarn('center break %d , %d ', self.cupboundingBox.X, self.cupboundingBox.Y) 
-                #break
-        
-        '''print "strech arm by IV Kinemetics"
-        try: 
-	    planning_group = userdata.input_planning_group
-            end_effector_name = "gripper";
-            kinematics_pose = KinematicsPose()
-
-            distance = math.sqrt(self.kinematicsStates[0]**2+self.kinematicsStates[1]**2)
-            cup_width = self.cupboundingBox.xmax - self.cupboundingBox.xmin
-            z_value = 0
-            stetch_offset = 0.0
-
-            #depth calculation by x width
-            if cup_width < 75 :
-                cup_width = 75 
-	    elif cup_width >145 :
-                cup_width = 145
-
-	    if cup_width < 100 :
-                stetch_offset = -0.5*cup_width + 70 
-	    elif cup_width >= 100 :
-                stetch_offset = -0.2*cup_width + 39 	    
-
-            stetch_offset = stetch_offset/100 -0.03
+            rospy.logwarn(" detect object.. ") 
             
-            kinematics_pose.pose.position.x = self.kinematicsStates[0]*(distance+stetch_offset)/distance #x
-            kinematics_pose.pose.position.y = self.kinematicsStates[1]*(distance+stetch_offset)/distance #y
-            kinematics_pose.pose.position.z = self.kinematicsStates[2] #z
+            if self.mode != 0 :
+                continue 
 
-            rospy.logwarn('%.2f ,%.2f ,%.2f -> %.2f ,%.2f ,%.2f ', self.kinematicsStates[0], self.kinematicsStates[1], self.kinematicsStates[2], \
-            kinematics_pose.pose.position.x, kinematics_pose.pose.position.y, kinematics_pose.pose.position.z) 
-	    
-            path_time = 1
-            resp1 = self.set_kinematics_position(planning_group, end_effector_name, kinematics_pose, path_time)
-	    print 'kinemetics resp1 {}'.format(resp1.is_planned) 
-	    rospy.sleep(1) 
-        except rospy.ServiceException, e:
-            print "Service call failed: %s"%e
-         
-	#self.object_pose_sub.unregister()
-	#self.open_manipulator_joint_states_sub_.unregister()
-        rospy.sleep(2)
+            tmp_x = self.trans[0]
+            tmp_y = self.trans[1]
+            tmp_z = self.trans[2] 
 
-        print "Send Position by Joint Control "
-        try: 
-	    joint_position = JointPosition()
-	    planning_group = userdata.input_planning_group
-	    joint_position.joint_name = ['joint1','joint2','joint3','joint4']
-            joint_position.position =  [0, -1.0, -0.571, 1.701]
-            path_time = 2.5
-            resp1 = self.set_joint_position(planning_group,joint_position, path_time)
-	    #print 'resp1 {}'.format(resp1.is_planned) 
-	    rospy.sleep(3) 
-        except rospy.ServiceException, e:
-            print "Service call failed: %s"%e
+            try:
+                resp1 = self.set_joint_position(planning_group,joint_position2, path_time)
+	        #print 'resp1 {}'.format(resp1.is_planned) 
+	        rospy.sleep(path_time) 
+            except rospy.ServiceException, e:
+                print "Service call failed: %s"%e
 
-	return 'succeeded'
-        self.open_manipulator_joint_states_sub_ 
-        self.open_manipulator_kinematics_pose_sub_
-        self.object_pose_sub'''
+            try: 
+	        planning_group = userdata.input_planning_group
+                end_effector_name = "gripper";
+                kinematics_pose = KinematicsPose()            
+                kinematics_pose.pose.position.x = tmp_x
+                kinematics_pose.pose.position.y = tmp_y
+                kinematics_pose.pose.position.z = tmp_z
+                rospy.logwarn('.........................%.2f ,%.2f ,%.2f ', self.trans[0], self.trans[0], self.trans[0]) 	    
+                path_time = 3
+                resp1 = self.set_kinematics_position(planning_group, end_effector_name, kinematics_pose, path_time)
+	        print 'kinemetics resp1 {}'.format(resp1.is_planned) 
+	        rospy.sleep(path_time) 
+            except rospy.ServiceException, e:
+                print "Service call failed: %s"%e
+      
+            #return 'succeeded'
+            try:
+                resp1 = self.set_joint_position(planning_group,joint_position1, path_time)
+	        #print 'resp1 {}'.format(resp1.is_planned) 
+	        rospy.sleep(path_time) 
+            except rospy.ServiceException, e:
+                print "Service call failed: %s"%e
+
+            self.mode = 9 
+
+            continue 
+
 
 class releaseAction(smach.State):
     def __init__(self):
