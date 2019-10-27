@@ -1,20 +1,15 @@
-[WARN] [1567955002.088686, 38.108000]: Set more tolerance[0.070000]
-[INFO] [1567955002.089831, 38.108000]: State machine transitioning 'ALIGN_ARM_WITH_OBJECT':'aborted'-->'ALIGN_ARM_WITH_OBJECT'
-[INFO] [1567955002.091853, 38.109000]: eef.position.x : -0.020000
-[INFO] [1567955002.093209, 38.109000]: eef.position.y : -0.710000
-[INFO] [1567955002.094204, 38.110000]: eef.position.z : 0.120000
-[WARN] [1567955007.315842, 40.400000]: Set more tolerance[0.075000]
-[INFO] [1567955007.317723, 40.400000]: State machine transitioning 'ALIGN_ARM_WITH_OBJECT':'aborted'-->'ALIGN_ARM_WITH_OBJECT'
-[INFO] [1567955007.318787, 40.400000]: eef.position.x : -0.020000
-[INFO] [1567955007.319124, 40.400000]: eef.position.y : -0.710000
-[INFO] [1567955007.319376, 40.400000]: eef.position.z : 0.120000
-[WARN] [1567955012.608085, 42.802000]: Set more tolerance[0.080000]
-[INFO] [1567955012.610963, 42.802000]: State machine transitioning 'ALIGN_ARM_WITH_OBJECT':'aborted'-->'ALIGN_ARM_WITH_OBJECT'
-[INFO] [1567955012.612865, 42.804000]: eef.position.x : -0.020000
-[INFO] [1567955012.613370, 42.804000]: eef.position.y : -0.710000
-[INFO] [1567955012.613761, 42.804000]: eef.position.z : 0.120000
-[WARN] [1567955017.830082, 45.028000]: Set more tolerance[0.085000]
-[INFO] [1567955017.830686, 45.028000]: State machine transitioning 'ALIGN_ARM_WITH_OBJECT':'aborted'-->'ALIGN_ARM_WITH_OBJECT'
-[INFO] [1567955017.832137, 45.029000]: eef.position.x : -0.020000
-[INFO] [1567955017.832870, 45.029000]: eef.position.y : -0.710000
-[INFO] [1567955017.833290, 45.029000]: eef.position.z : 0.120000
+[INFO] [1572152765.027081]: State machine transitioning 'WAIT_COMMAND':'option4'-->'PICK_FIRST_POSITION'
+[ERROR] [1572152765.039517]: InvalidUserCodeError: Reading from SMACH userdata key 'input_position' but the only keys that were declared as input to this state were: ['input_planning_group', 'input_timeinput_position']. This key needs to be declaread as input to this state. 
+[ERROR] [1572152765.040056]: Could not execute request callback: Traceback (most recent call last):
+  File "/opt/ros/kinetic/lib/python2.7/dist-packages/smach_ros/service_state.py", line 163, in execute
+    **self._request_cb_kwargs)
+  File "/home/hyunoklee/catkin_ws/src/open_manipulator_potman/nodes/potman_state_machine", line 587, in joint_position_request_cb
+    request.joint_position.position = userdata.input_position
+  File "/opt/ros/kinetic/lib/python2.7/dist-packages/smach/user_data.py", line 167, in __getattr__
+    raise smach.InvalidUserCodeError("Reading from SMACH userdata key '%s' but the only keys that were declared as input to this state were: %s. This key needs to be declaread as input to this state. " % (name, self._input))
+InvalidUserCodeError: Reading from SMACH userdata key 'input_position' but the only keys that were declared as input to this state were: ['input_planning_group', 'input_timeinput_position']. This key needs to be declaread as input to this state. 
+
+[INFO] [1572152765.040291]: State machine terminating 'PICK_FIRST_POSITION':'aborted':'aborted'
+^C[potman_state_machine-1] killing on exit
+shutting down processing monitor...
+... shutting down processing monitor complete
