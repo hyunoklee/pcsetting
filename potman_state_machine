@@ -77,10 +77,8 @@ class cheersActionByYoloJsk(smach.State):
                                         go_base_location \
                                         go_tf_location_of_cup \
                                         wait_finish_movement \
-                                        check_camera_veiw_position_of_cup \
                                         close_cup \
-                                        left_scan \
-                                        right_scan \
+                                        kick_cup \
                                         exit')
 
         self.pre_step = self.StepCupTracking.exit.value
@@ -171,6 +169,7 @@ class cheersActionByYoloJsk(smach.State):
         end_effector_name = "gripper";     
         kinematics_pose = KinematicsPose()
         cup_tf = [0, 0, 0]   
+        self.mode = 9
 
 	while 1:
 
@@ -192,7 +191,7 @@ class cheersActionByYoloJsk(smach.State):
 
             if self.step == self.StepCupTracking.go_backward_location.value:
                 rospy.logwarn("go_backward_location")
-
+                #rospy.sleep(3)
                 joint_position.position =  [0, -1.551, -0.234, 1.98]
                 path_time = 2.5
                 try:
@@ -206,8 +205,8 @@ class cheersActionByYoloJsk(smach.State):
                 self.step = self.StepCupTracking.wait_detecting_tf_of_cup.value
 
             elif self.step == self.StepCupTracking.wait_detecting_tf_of_cup.value:
-                rospy.logwarn("wait_detecting_tf_of_cup")
-                #rospy.sleep(3)
+                #rospy.logwarn("wait_detecting_tf_of_cup")
+                rospy.sleep(3)
 	        object_detect_duration = rospy.get_rostime().to_sec() - self.last_detect_time.to_sec()
 	        #rospy.logwarn("duration %.2f",object_detect_duration )
                 tmp_x = self.trans[0]
@@ -215,12 +214,18 @@ class cheersActionByYoloJsk(smach.State):
                 tmp_z = self.trans[2] 
                 distance = math.sqrt(tmp_x**2 + tmp_y**2 + tmp_z**2)
                 width = self.cupboundingBox.xmax - self.cupboundingBox.xmin
- 	
+ 	        #rospy.sleep(0.5)
 	        if object_detect_duration > 1 or tmp_x > 0.5 or distance >0.7 or tmp_z < 0.05 or tmp_x < 0.07 or self.cupboundingBox.Z < 0.01 :
 	            rospy.logwarn(" no object.. ")
                     pass
-                else :                    
-                    cup_tf = [tmp_x, tmp_y, tmp_z]
+                else : 
+                    radian = math.atan(tmp_y/tmp_x)
+                    degree = math.degrees(radian)
+                    dist = 0.1	
+                    distX = math.cos(radian)*dist
+                    distY = math.sin(radian)*dist
+                    rospy.logwarn("tmp_xyz %.2f,%.2f,%.2f _ radian %.2f(%.2f) distXY %.3f , %.3f",tmp_x,tmp_y,tmp_z,radian, degree, distX, distY )
+                    cup_tf = [tmp_x - distX , tmp_y - distY, tmp_z + 0.05]
                     self.pre_step = self.StepCupTracking.wait_detecting_tf_of_cup.value
                     self.step = self.StepCupTracking.go_base_location.value
 
@@ -245,9 +250,13 @@ class cheersActionByYoloJsk(smach.State):
                 kinematics_pose.pose.position.x =  cup_tf[0]
                 kinematics_pose.pose.position.y =  cup_tf[1]
                 kinematics_pose.pose.position.z =  cup_tf[2]
+                distance = math.sqrt(cup_tf[0]**2 + cup_tf[1]**2 + cup_tf[2]**2)
+                operating_time = distance * 7 / 0.6
+                if operating_time < 3 :
+                    operating_time = 3 
                 try: 
-                    resp1 = self.set_kinematics_position(planning_group, end_effector_name, kinematics_pose, 3)
-	            print 'kinemetics resp1 {}'.format(resp1.is_planned) 
+                    resp1 = self.set_kinematics_position(planning_group, end_effector_name, kinematics_pose, operating_time)
+	            print 'kinemetics resp1 {} time '.format(resp1.is_planned, operating_time) 
                     rospy.sleep(0.1)
                 except rospy.ServiceException, e:
                     print "Service call failed: %s"%e
@@ -263,34 +272,25 @@ class cheersActionByYoloJsk(smach.State):
                 centy = self.cupboundingBox.Y
                 rospy.logwarn("wait_finish_movement %s , width, %d ", self.open_manipulator_moving_state, width)
                 rospy.sleep(1)
-                if object_yolodetect_duration < 0.5 and width>500 :
+                if object_yolodetect_duration < 0.5 and width>300 :
                     self.stop_movement(userdata)
                     self.pre_step = self.StepCupTracking.wait_finish_movement.value
                     self.step = self.StepCupTracking.close_cup.value
                     rospy.logwarn("if .............  1 w %.2f", width)                    
                 elif self.open_manipulator_moving_state == OpenManipulatorState.STOPPED :
                     self.pre_step = self.StepCupTracking.wait_finish_movement.value
-                    self.step = self.StepCupTracking.check_camera_veiw_position_of_cup.value
+                    self.step = self.StepCupTracking.close_cup.value
                     rospy.logwarn("if ................................................2 w %.2f", width)
                 else :
                     rospy.logwarn("if .............  3 w %.2f", width)
 
-            elif self.step == self.StepCupTracking.check_camera_veiw_position_of_cup.value:
-                rospy.logwarn("check_camera_veiw_position_of_cup")                
-	        object_yolodetect_duration = rospy.get_rostime().to_sec() - self.last_yolodetect_time.to_sec()
-                self.pre_step = self.StepCupTracking.check_camera_veiw_position_of_cup.value
-	        if object_yolodetect_duration > 1 :                    
-                    self.step = self.StepCupTracking.left_scan.value
-                else :
-                    self.step = self.StepCupTracking.close_cup.value
-
-
-            elif self.step == self.StepCupTracking.close_cup.value:                
+            elif self.step == self.StepCupTracking.close_cup.value:    
+	        object_yolodetect_duration = rospy.get_rostime().to_sec() - self.last_yolodetect_time.to_sec()            
                 width = self.cupboundingBox.xmax - self.cupboundingBox.xmin
                 centX = self.cupboundingBox.X
                 centY = self.cupboundingBox.Y
                 cameraCenX =390 # 320
-                cameraCenY =350 # 240
+                cameraCenY =450 # 240
                 range_x = 100
                 range_y = 100
                 minX = cameraCenX - range_x
@@ -299,25 +299,33 @@ class cheersActionByYoloJsk(smach.State):
                 maxY = cameraCenY + range_y
                 move_x = 0
                 move_y = 0
+
+	        if object_yolodetect_duration > 1 :
+                    self.stop_movement(userdata)                    
+                    self.pre_step = self.StepCupTracking.close_cup.value
+                    self.step = self.StepCupTracking.exit.value
+                    continue
+
                 if minX < centX and centX < maxX and minY < centY and centY < maxY :
                     self.stop_movement(userdata)
                     self.pre_step = self.StepCupTracking.close_cup.value
-                    self.step = self.StepCupTracking.exit.value   
+                    self.step = self.StepCupTracking.kick_cup.value   
                     rospy.logwarn("1close_cup centXY %.2f  ( %.2f, %.2f ), %.2f ( %.2f, %.2f )_%.2f,%.2f_w %.2f",\
                                     centX, minX, maxX ,centY ,minY, maxY,move_x, move_y, width)
+
                 else :
                     if centX < minX : 
                         #turn left
-                        move_x = 0.01 
+                        move_x = 0.03 
                     elif centX > maxX : 
                         #turn right
-                        move_x = -0.01 
+                        move_x = -0.03 
                     if centY < minY : 
                         #turn up
-                        move_y = -0.01 
+                        move_y = -0.03 
                     elif centY > maxY : 
                         #turn down
-                        move_y = 0.01   
+                        move_y = 0.03   
                     rospy.logwarn("2close_cup centXY %.2f  ( %.2f, %.2f ), %.2f ( %.2f, %.2f )_%.2f,%.2f_w %.2f",\
                                     centX, minX, maxX ,centY ,minY, maxY,move_x, move_y, width)             
                     try:
@@ -328,51 +336,22 @@ class cheersActionByYoloJsk(smach.State):
                     except rospy.ServiceException, e:
                         print "Service call failed: %s"%e
 
-            elif self.step == self.StepCupTracking.left_scan.value:
-                rospy.logwarn("left_scan")
-                once_check = True
-	        object_yolodetect_duration = rospy.get_rostime().to_sec() - self.last_yolodetect_time.to_sec()
-	        if object_yolodetect_duration > 1 and self.open_manipulator_moving_state == OpenManipulatorState.STOPPED and once_check : 
-                    #turn left
-                    once_check = False
-                    try:
-                        joint_position.position =  [0.5, 0, 0, 0]
-                        resp1 = self.set_joint_position_from_present(planning_group,joint_position, 3)
-	                print 'resp2 {}'.format(resp1.is_planned) 
-                    except rospy.ServiceException, e:
-                        print "Service call failed: %s"%e
-	        elif object_yolodetect_duration < 1 :
-                    self.stop_movement(userdata)
-                    self.pre_step = self.StepCupTracking.left_scan.value  
-                    self.pre_step = self.StepCupTracking.close_cup.value 
-                elif self.open_manipulator_moving_state == "IS_MOVING" :
-                    pass
-                else :
-                    self.pre_step = self.StepCupTracking.left_scan.value
-                    self.step = self.StepCupTracking.right_scan.value
+            elif self.step == self.StepCupTracking.kick_cup.value:
+                try:
+                    joint_position.position =  [0, 0.2, -0.3, 0]
+                    resp1 = self.set_joint_position_from_present(planning_group,joint_position, 1)
+                    rospy.sleep(1)  
+	            print 'resp2 {}'.format(resp1.is_planned) 
+                    rospy.sleep(1) 
+                    joint_position.position =  [0, -0.2, 0.3, 0]
+                    resp1 = self.set_joint_position_from_present(planning_group,joint_position, 2)
+                    rospy.sleep(2)  
+	            print 'resp2 {}'.format(resp1.is_planned) 
+                except rospy.ServiceException, e:
+                    print "Service call failed: %s"%e    
+                self.pre_step = self.StepCupTracking.kick_cup.value
+                self.step = self.StepCupTracking.exit.value 
 
-            elif self.step == self.StepCupTracking.right_scan.value:
-                rospy.logwarn("right_scan")
-                once_check = True
-	        object_yolodetect_duration = rospy.get_rostime().to_sec() - self.last_yolodetect_time.to_sec()
-	        if object_yolodetect_duration > 1 and self.open_manipulator_moving_state == OpenManipulatorState.STOPPED and once_check : 
-                    #turn right
-                    once_check = False
-                    try:
-                        joint_position.position =  [-1, 0, 0, 0]
-                        resp1 = self.set_joint_position_from_present(planning_group,joint_position, 6)
-	                print 'resp2 {}'.format(resp1.is_planned) 
-                    except rospy.ServiceException, e:
-                        print "Service call failed: %s"%e
-	        elif object_yolodetect_duration < 1 :
-                    self.stop_movement(userdata)
-                    self.pre_step = self.StepCupTracking.right_scan.value  
-                    self.pre_step = self.StepCupTracking.close_cup.value 
-                elif self.open_manipulator_moving_state == "IS_MOVING" :
-                    pass
-                else :
-                    self.pre_step = self.StepCupTracking.right_scan.value
-                    self.step = self.StepCupTracking.exit.value
             elif self.step == self.StepCupTracking.exit.value:
                 rospy.logwarn("exit")
                 #rospy.sleep(3)
@@ -388,45 +367,9 @@ class cheersActionByYoloJsk(smach.State):
         else :
 	    return 'succeeded'
 
-class releaseAction(smach.State):
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['succeeded', 'aborted'],
-                                    input_keys=['input_planning_group',
-                                                'input_motionfile_file'])
-
-        self.set_joint_position = rospy.ServiceProxy('/open_manipulator/goal_joint_space_path', SetJointPosition)
-        self.set_gripper_position = rospy.ServiceProxy('/open_manipulator/goal_tool_control', SetJointPosition)
-
-    def execute(self, userdata):
-        try: 
-	    joint_position = JointPosition()
-	    planning_group = userdata.input_planning_group
-	    joint_position.joint_name = ['joint1','joint2','joint3','joint4']
-            joint_position.position =  [0.486, 0.739, 0.279, -0.93]
-            path_time = 2
-            resp1 = self.set_joint_position(planning_group,joint_position, path_time)
-	    #print 'resp1 {}'.format(resp1.is_planned) 
-	    rospy.sleep(2) 
-        except rospy.ServiceException, e:
-            print "Service call failed: %s"%e
-            
-        try: 
-	    gripper_position = JointPosition()
-	    planning_group = userdata.input_planning_group
-	    gripper_position.joint_name = ['gripper']
-            gripper_position.position =  [0.01]
-            path_time = 1
-            resp1 = self.set_gripper_position(planning_group,gripper_position, path_time)
-	    #print 'resp1 {}'.format(resp1.is_planned) 
-	    rospy.sleep(1) 
-        except rospy.ServiceException, e:
-            print "Service call failed: %s"%e
-	return 'succeeded'
-
-
 class waitCommand(smach.State):
     def __init__(self):
-        smach.State.__init__(self, outcomes=['succeeded','aborted','option0','option1','option2','option3','option4'])
+        smach.State.__init__(self, outcomes=['succeeded','aborted','option0','option1','option2','option3','option4','option5'])
         self.command_Key_sub = rospy.Subscriber('command_Key', String, self.commandKeyCallback)
         self.mode = 9
 
@@ -440,6 +383,8 @@ class waitCommand(smach.State):
             self.mode = 2
         elif msg.data == "3" :
             self.mode = 3
+        elif msg.data == "5" :
+            self.mode = 5
         elif msg.data == "6" :
             self.mode = 6
         else :
@@ -450,7 +395,7 @@ class waitCommand(smach.State):
         #print '0. Pour Mode\n1. Cheer Mode\n2. Release Cup\n3. Finish \n' 
         
         while 1 :
-            if rospy.is_shutdown() or self.mode == 0 or self.mode == 1 or self.mode == 2 or self.mode == 3 or self.mode == 6:
+            if rospy.is_shutdown() or self.mode == 0 or self.mode == 1 or self.mode == 2 or self.mode == 3 or self.mode == 5 or self.mode == 6:
                 break
 
         if self.mode == 0 :
@@ -465,13 +410,16 @@ class waitCommand(smach.State):
         elif self.mode == 3 :
             rospy.logwarn('Start TALKING')        
             return 'option3' 
+        elif self.mode == 5 :
+            rospy.logwarn('Start Cheers')        
+            return 'option5' 
         elif self.mode == 6 :
             rospy.logwarn('PICK CUP')        
             return 'option4' 
         else :
             return 'succeeded' 
     
-class pourAction(smach.State):
+class fileAction(smach.State):
     
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded', 'aborted'],
@@ -484,8 +432,10 @@ class pourAction(smach.State):
 
     def execute(self, userdata):
         inputfile = userdata.input_motionfile_file
+        self.count = 0
 	while 1:
-            
+            if rospy.is_shutdown() :
+                break
             if self.count > ( len(inputfile) - 1 ):
                 break
 
@@ -528,55 +478,24 @@ class pourAction(smach.State):
 
 	return 'succeeded'
 
-class releaseAction(smach.State):
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['succeeded', 'aborted'],
-                                    input_keys=['input_planning_group',
-                                                'input_motionfile_file'])
-
-        self.set_joint_position = rospy.ServiceProxy('/open_manipulator/goal_joint_space_path', SetJointPosition)
-        self.set_gripper_position = rospy.ServiceProxy('/open_manipulator/goal_tool_control', SetJointPosition)
-
-    def execute(self, userdata):
-        try: 
-	    joint_position = JointPosition()
-	    planning_group = userdata.input_planning_group
-	    joint_position.joint_name = ['joint1','joint2','joint3','joint4']
-            joint_position.position =  [0.486, 0.739, 0.279, -0.93]
-            path_time = 2
-            resp1 = self.set_joint_position(planning_group,joint_position, path_time)
-	    #print 'resp1 {}'.format(resp1.is_planned) 
-	    rospy.sleep(2) 
-        except rospy.ServiceException, e:
-            print "Service call failed: %s"%e
-            
-        try: 
-	    gripper_position = JointPosition()
-	    planning_group = userdata.input_planning_group
-	    gripper_position.joint_name = ['gripper']
-            gripper_position.position =  [0.01]
-            path_time = 1
-            resp1 = self.set_gripper_position(planning_group,gripper_position, path_time)
-	    #print 'resp1 {}'.format(resp1.is_planned) 
-	    rospy.sleep(1) 
-        except rospy.ServiceException, e:
-            print "Service call failed: %s"%e
-	return 'succeeded'
-
 def main():
     rospy.init_node('pick_and_place_state_machine2')
     namespace = rospy.get_param("~robot_name")
     planning_group = rospy.get_param("~planning_group")
     detection_type = rospy.get_param("~detection_type")
-    pick_center = smach.StateMachine(outcomes=['succeeded','aborted','preempted','option0','option1','option2','option3','option4'])
+    pick_center = smach.StateMachine(outcomes=['succeeded','aborted','preempted','option0','option1','option2','option3','option4','option5'])
    
     rospack = rospkg.RosPack()
     rospack.list() 
     package_path = rospack.get_path('open_manipulator_potman')
     rospy.logwarn("detection_type %s",detection_type )
 
-    with open(package_path+'/cfg/output.txt') as data:
-        inputfile = [[float(i) for i in line.split(",")] for line in data.readlines()]
+    with open(package_path+'/cfg/output_pour.txt') as data:
+        inputfile_pour = [[float(i) for i in line.split(",")] for line in data.readlines()]
+        #print(numbers[0])
+
+    with open(package_path+'/cfg/output_serve.txt') as data:
+        inputfile_serve = [[float(i) for i in line.split(",")] for line in data.readlines()]
         #print(numbers[0])
 
     with pick_center:
@@ -630,22 +549,30 @@ def main():
         smach.StateMachine.add('WAIT_COMMAND', waitCommand(),
                                 transitions={'succeeded':'WAIT_COMMAND',
                                              'option0':'POUR_ALCOHOL',
-                                             #'option1':'SERVE_FOOD',
-                                             'option1':'succeeded',
+                                             'option1':'SERVE_FOOD',
+                                             #'option1':'succeeded',
                                              'option2':'RELEASE_FIRST_POSITION',
                                              #'option3':'TALKING',
                                              'option3':'succeeded',
                                              'option4':'PICK_FIRST_POSITION',
+                                             'option5':'CHEERS_SEQUENCE',
                                              'aborted':'aborted'})
 
-        pick_center.userdata.motionfile = inputfile	    
-        smach.StateMachine.add('POUR_ALCOHOL', pourAction(),
+        pick_center.userdata.motionfile_pour = inputfile_pour	    
+        smach.StateMachine.add('POUR_ALCOHOL', fileAction(),
                                 transitions={'succeeded':'PICK_FIRST_POSITION',
                                              'aborted':'succeeded'},
                                 remapping={'input_planning_group':'planning_group', 
-                                           'input_motionfile_file':'motionfile'})
+                                           'input_motionfile_file':'motionfile_pour'})
 
-        ########## PICKING CUP START ##################################################
+        pick_center.userdata.motionfile_serve = inputfile_serve	    
+        smach.StateMachine.add('SERVE_FOOD', fileAction(),
+                                transitions={'succeeded':'WAIT_COMMAND',
+                                             'aborted':'succeeded'},
+                                remapping={'input_planning_group':'planning_group', 
+                                           'input_motionfile_file':'motionfile_serve'})
+
+        ########## PICKING CUP ##################################################
         pick_center.userdata.pick_first_position = [0.0, -0.097, 1.361, -0.905]
         pick_center.userdata.pick_first_position_time = 3
         smach.StateMachine.add('PICK_FIRST_POSITION',
@@ -654,7 +581,7 @@ def main():
                                              request_cb=joint_position_request_cb,
                                              response_cb=joint_position_response_cb,
                                              input_keys=['input_planning_group',
-                                                         'input_time'
+                                                         'input_time',
                                                          'input_position']),
                                 transitions={'succeeded':'PICK_GRIPPER_OPEN'},
                                 remapping={'input_planning_group':'planning_group',
@@ -662,14 +589,14 @@ def main():
                                             'input_position':'pick_first_position'})
 
         pick_center.userdata.pick_open_gripper = [0.01]
-        pick_center.userdata.pick_open_gripper_time = 2
+        pick_center.userdata.pick_open_gripper_time = 0.5
         smach.StateMachine.add('PICK_GRIPPER_OPEN',
                                 ServiceState('/open_manipulator/goal_tool_control',
                                              SetJointPosition,
                                              request_cb=gripper_request_cb,
                                              response_cb=gripper_response_cb,
                                              input_keys=['input_planning_group',
-                                                         'input_time'
+                                                         'input_time',
                                                          'input_gripper']),
                                 transitions={'succeeded':'PICK_SECOND_POSITION'},
                                 remapping={'input_planning_group':'planning_group',
@@ -685,7 +612,7 @@ def main():
                                              request_cb=joint_position_request_cb,
                                              response_cb=joint_position_response_cb,
                                              input_keys=['input_planning_group',
-                                                         'input_time'
+                                                         'input_time',
                                                          'input_position']),
                                 transitions={'succeeded':'PICK_GRIPPER_CLOSE'},
                                 #transitions={'succeeded':'succeeded'},
@@ -701,7 +628,7 @@ def main():
                                              request_cb=gripper_request_cb,
                                              response_cb=gripper_response_cb,
                                              input_keys=['input_planning_group',
-                                                         'input_time'
+                                                         'input_time',
                                                          'input_gripper']),
                                 transitions={'succeeded':'PICK_THIRD_POSITION'},
                                 remapping={'input_planning_group':'planning_group',
@@ -716,7 +643,7 @@ def main():
                                              request_cb=joint_position_request_cb,
                                              response_cb=joint_position_response_cb,
                                              input_keys=['input_planning_group',
-                                                         'input_time'
+                                                         'input_time',
                                                          'input_position']),
                                 transitions={'succeeded':'CHEERS_SEQUENCE'},
                                 #transitions={'succeeded':'succeeded'},
@@ -724,36 +651,50 @@ def main():
                                            'input_time':'pick_third_position_time',
                                             'input_position':'pick_third_position'})
 
-        ########## PICKING CUP END ##################################################
-
-        ########## TRACKING CUP END ##################################################
+        ########## TRACKING CUP ##################################################
         smach.StateMachine.add('CHEERS_SEQUENCE', cheersActionByYoloJsk(),
                                 transitions={'succeeded':'succeeded',
-                                             #'option1':'SERVE_FOOD',
-                                             'option1':'succeeded',
+                                             'option1':'SERVE_FOOD',
+                                             #'option1':'succeeded',
                                              'option2':'RELEASE_FIRST_POSITION',
                                              #'option3':'TALKING',
                                              'option3':'succeeded',
                                              'aborted':'succeeded'},
                                 remapping={'input_planning_group':'planning_group'})
 
-        ########## RELEASE CUP START ##################################################
+        ########## RELEASE CUP ##################################################
 
-        pick_center.userdata.release_first_position = [0.0, 0.431, 0.703, -1.069]
-        pick_center.userdata.release_first_position_time = 5
+        pick_center.userdata.release_first_position = [0.0, -0.485, 1.173, -0.472]
+        pick_center.userdata.release_first_position_time = 2
         smach.StateMachine.add('RELEASE_FIRST_POSITION',
                                 ServiceState('/open_manipulator/goal_joint_space_path',
                                              SetJointPosition,
                                              request_cb=joint_position_request_cb,
                                              response_cb=joint_position_response_cb,
                                              input_keys=['input_planning_group',
-                                                         'input_time'
+                                                         'input_time',
                                                          'input_position']),
-                                transitions={'succeeded':'RELEASE_GRIPPER_OPEN'},
+                                transitions={'succeeded':'RELEASE_SECOND_POSITION'},
                                 #transitions={'succeeded':'succeeded'},
                                 remapping={'input_planning_group':'planning_group',
                                            'input_time':'release_first_position_time',
                                             'input_position':'release_first_position'})
+
+        pick_center.userdata.release_second_position = [0.0, 0.431, 0.703, -1.069]
+        pick_center.userdata.release_second_position_time = 3
+        smach.StateMachine.add('RELEASE_SECOND_POSITION',
+                                ServiceState('/open_manipulator/goal_joint_space_path',
+                                             SetJointPosition,
+                                             request_cb=joint_position_request_cb,
+                                             response_cb=joint_position_response_cb,
+                                             input_keys=['input_planning_group',
+                                                         'input_time',
+                                                         'input_position']),
+                                transitions={'succeeded':'RELEASE_GRIPPER_OPEN'},
+                                #transitions={'succeeded':'succeeded'},
+                                remapping={'input_planning_group':'planning_group',
+                                           'input_time':'release_second_position_time',
+                                            'input_position':'release_second_position'})
 
         pick_center.userdata.release_open_gripper = [0.01]
         pick_center.userdata.release_open_gripper_time = 2
@@ -763,7 +704,7 @@ def main():
                                              request_cb=gripper_request_cb,
                                              response_cb=gripper_response_cb,
                                              input_keys=['input_planning_group',
-                                                         'input_time'
+                                                         'input_time',
                                                          'input_gripper']),
                                 transitions={'succeeded':'POTMAN_INIT_POSITION'},
                                 remapping={'input_planning_group':'planning_group',
