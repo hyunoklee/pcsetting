@@ -1,15 +1,22 @@
-[INFO] [1572152765.027081]: State machine transitioning 'WAIT_COMMAND':'option4'-->'PICK_FIRST_POSITION'
-[ERROR] [1572152765.039517]: InvalidUserCodeError: Reading from SMACH userdata key 'input_position' but the only keys that were declared as input to this state were: ['input_planning_group', 'input_timeinput_position']. This key needs to be declaread as input to this state. 
-[ERROR] [1572152765.040056]: Could not execute request callback: Traceback (most recent call last):
-  File "/opt/ros/kinetic/lib/python2.7/dist-packages/smach_ros/service_state.py", line 163, in execute
-    **self._request_cb_kwargs)
-  File "/home/hyunoklee/catkin_ws/src/open_manipulator_potman/nodes/potman_state_machine", line 587, in joint_position_request_cb
-    request.joint_position.position = userdata.input_position
-  File "/opt/ros/kinetic/lib/python2.7/dist-packages/smach/user_data.py", line 167, in __getattr__
-    raise smach.InvalidUserCodeError("Reading from SMACH userdata key '%s' but the only keys that were declared as input to this state were: %s. This key needs to be declaread as input to this state. " % (name, self._input))
-InvalidUserCodeError: Reading from SMACH userdata key 'input_position' but the only keys that were declared as input to this state were: ['input_planning_group', 'input_timeinput_position']. This key needs to be declaread as input to this state. 
-
-[INFO] [1572152765.040291]: State machine terminating 'PICK_FIRST_POSITION':'aborted':'aborted'
-^C[potman_state_machine-1] killing on exit
-shutting down processing monitor...
-... shutting down processing monitor complete
+        <surface>
+          <friction>
+            <ode>
+              <!--<mu>100.0</mu>
+              <mu2>100.0</mu2>-->
+              <mu>1000000000.0</mu>
+              <mu2>10000000.0</mu2>
+              <!--<mu>100.0</mu>
+              <mu2>100.0</mu2>-->
+            </ode>
+          </friction>
+          <contact>
+            <ode>
+              <kp>100.0</kp>
+              <kd>100.0</kd>
+              <!--<kp>1000000.0</kp>
+              <kd>100.0</kd>-->
+              <max_vel>1.0</max_vel>
+              <min_depth>0.002</min_depth>
+            </ode>
+          </contact>
+        </surface>
